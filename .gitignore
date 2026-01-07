@@ -1,0 +1,5 @@
+.vim-session
+.nvim.lua
+.env
+coverage/
+output/
