@@ -1,5 +1,6 @@
 .vim-session
 .nvim.lua
 .env
+.env.test
 coverage/
 output/

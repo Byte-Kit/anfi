@@ -74,5 +74,10 @@
   },
   "fmt": {
     "operatorPosition": "nextLine"
+  },
+  "lint": {
+    "rules": {
+      "tags": ["recommended", "react"]
+    }
   }
 }
