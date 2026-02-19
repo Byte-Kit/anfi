@@ -25,7 +25,7 @@ if (args.first() === "init") {
 }
 
 if (args.first() === "migrate") {
-  db.migrate();
+  db.migrateAsync();
 }
 
 if (args.first() === "remove") {

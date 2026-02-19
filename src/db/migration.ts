@@ -10,7 +10,7 @@ import * as dbConnection from "./connection.ts";
  *
  * Entries are sorted in alphabetical order.
  */
-export async function migrate() {
+export async function migrateAsync() {
   const connection = dbConnection.connect();
   const migrationsPath = config.get(config.Key.DbMigrationPath);
 
