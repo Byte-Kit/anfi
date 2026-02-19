@@ -1,5 +1,5 @@
 import { SQLOutputValue } from "node:sqlite";
-import { BaseEntity } from "./index.ts";
+import { BaseEntity } from "./Abstract.model.ts";
 
 export interface TransactionData {
   amount: number;

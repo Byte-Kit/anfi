@@ -1,6 +1,7 @@
 import { Chrono } from "@anfi/lib/index.ts";
-import { BaseEntity, TransactionType } from "./index.ts";
+import { TransactionType } from "./index.ts";
 import { SQLOutputValue } from "node:sqlite";
+import { BaseEntity } from "./Abstract.model.ts";
 
 export interface BudgetData {
   periodStart: Chrono;
