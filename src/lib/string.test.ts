@@ -1,6 +1,6 @@
 import { describe, it } from "@std/testing/bdd";
 import { assertEquals } from "@std/assert";
-import { StringBuilder } from "./string.ts";
+import { camelToSnakeCase, StringBuilder } from "./string.ts";
 
 describe("StringBuilder", () => {
   describe("append", () => {
@@ -54,5 +54,12 @@ describe("StringBuilder", () => {
         );
       });
     });
+  });
+});
+
+describe("camelToSnakeCase(string)", () => {
+  it("should convert camelCase to snake_case", () => {
+    assertEquals(camelToSnakeCase("camelCase"), "camel_case");
+    assertEquals(camelToSnakeCase("keyNumber1"), "key_number1");
   });
 });

@@ -58,3 +58,7 @@ export class StringBuilder {
     return this.append(values.join("\n")).newLine();
   }
 }
+
+export function camelToSnakeCase(value: string): string {
+  return value.replace(/([A-Z])/g, "_$1").toLowerCase();
+}
