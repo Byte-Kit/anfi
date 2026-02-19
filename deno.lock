@@ -47,6 +47,7 @@
     "@std/fs@1.0.22": {
       "integrity": "de0f277a58a867147a8a01bc1b181d0dfa80bfddba8c9cf2bacd6747bcec9308",
       "dependencies": [
+        "jsr:@std/internal",
         "jsr:@std/path"
       ]
     },
@@ -289,6 +290,7 @@
     "dependencies": [
       "jsr:@std/assert@1",
       "jsr:@std/cli@1",
+      "jsr:@std/fs@^1.0.22",
       "jsr:@std/testing@1",
       "npm:@types/react@^19.2.13",
       "npm:ink@^6.6.0",

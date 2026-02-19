@@ -29,10 +29,9 @@ if (args.first() === "migrate") {
 }
 
 if (args.first() === "remove") {
-  db.remove();
+  db.removeAsync();
 }
 
 if (args.first() === "reset") {
-  db.remove();
-  db.connect();
+  db.removeAsync().then(() => db.connect());
 }

@@ -26,7 +26,7 @@ describe("connection", () => {
 
     describe(`when ${Config.Key.DbPath} is set`, () => {
       afterEach(async () => {
-        await dbUtil.remove();
+        await dbUtil.removeAsync();
       });
 
       it("should initialize a database at the location defined by DB_PATH", async () => {
