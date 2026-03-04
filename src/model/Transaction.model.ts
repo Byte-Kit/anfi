@@ -1,4 +1,3 @@
-import { SQLOutputValue } from "node:sqlite";
 import { BaseEntity } from "./Abstract.model.ts";
 
 export interface TransactionData {
@@ -15,17 +14,6 @@ export class Transaction extends BaseEntity implements TransactionData {
   type: TransactionType;
   financialAccountId: string;
   financialEventId: string;
-
-  static fromDbRecord(
-    record: Record<string, SQLOutputValue>,
-  ): Transaction {
-    return new Transaction({
-      amount: Number(record.amount),
-      type: String(record.type) === "Credit" ? "Credit" : "Debit",
-      financialAccountId: String(record.financialAccountId),
-      financialEventId: String(record.financialEventId),
-    }, String(record.id));
-  }
 
   constructor(
     { amount, type, financialAccountId, financialEventId }: TransactionData,
