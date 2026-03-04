@@ -1,6 +1,5 @@
 import { Chrono } from "@anfi/lib/index.ts";
 import { TransactionType } from "./index.ts";
-import { SQLOutputValue } from "node:sqlite";
 import { BaseEntity } from "./Abstract.model.ts";
 
 export interface BudgetData {
@@ -18,18 +17,6 @@ export class Budget extends BaseEntity implements BudgetData {
   type: TransactionType;
   amount: number;
   financialAccountId: string;
-
-  static fromDbRecord(
-    record: Record<string, SQLOutputValue>,
-  ): Budget {
-    return new Budget({
-      periodStart: Chrono.from(Number(record.periodStart)),
-      periodEnd: Chrono.from(Number(record.periodEnd)),
-      type: String(record.type) === "Credit" ? "Credit" : "Debit",
-      amount: Number(record.amount),
-      financialAccountId: String(record.financialAccountId),
-    }, String(record.id));
-  }
 
   constructor(
     { periodStart, periodEnd, type, amount, financialAccountId }: BudgetData,
