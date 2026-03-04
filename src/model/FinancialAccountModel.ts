@@ -1,4 +1,4 @@
-import { BaseEntity } from "./Abstract.model.ts";
+import { BaseEntity } from "./AbstractModel.ts";
 
 export interface FinancialAccountData {
   type: FinancialAccountType;
