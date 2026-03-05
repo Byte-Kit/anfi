@@ -3,19 +3,20 @@
   "permissions": {
     "default": {
       "env": [
-        "HOME",
-        "PORT",
-        "DB_MIGRATION_PATH",
-        "DB_PATH",
         "CI",
         "COLORTERM",
         "CONTINUOUS_INTEGRATION",
+        "DB_MIGRATION_PATH",
+        "DB_PATH",
         "DEV",
+        "HOME",
         "INK_SCREEN_READER",
         "NODE_ENV",
+        "PORT",
         "TEAMCITY_VERSION",
         "TERM",
         "TERM_PROGRAM",
+        "TERM_PROGRAM_VERSION",
         "TF_BUILD",
         "TMUX"
       ],
