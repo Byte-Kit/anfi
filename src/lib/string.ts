@@ -20,6 +20,11 @@ export class StringBuilder {
    */
   s = this.space;
 
+  /**
+   * Alias to {@link line}
+   */
+  l = this.line;
+
   append(...values: string[]) {
     this._result = this._result.concat(values.join(""));
     return this;
