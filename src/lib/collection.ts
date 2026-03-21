@@ -42,8 +42,8 @@ export class Collection<T> {
     return this.toArray()[0];
   }
 
-  withoutFirst() {
-    return Collection.from(this.toArray().slice(1));
+  withoutFirst(count: number = 1) {
+    return Collection.from(this.toArray().slice(count));
   }
 
   withoutLast() {

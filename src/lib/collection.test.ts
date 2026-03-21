@@ -37,9 +37,10 @@ describe("Collection", () => {
     });
   });
 
-  describe("withoutFirst()", () => {
-    it("should return a copy without the first item", () => {
+  describe("withoutFirst(count)", () => {
+    it("should return a copy without the first (count) number of items", () => {
       assertArrayIncludes(collect([1, 2, 3]).withoutFirst().toArray(), [2, 3]);
+      assertArrayIncludes(collect([1, 2, 3]).withoutFirst(2).toArray(), [3]);
     });
   });
 
