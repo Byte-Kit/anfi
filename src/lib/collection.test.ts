@@ -10,7 +10,7 @@ describe("Collection", () => {
     });
   });
 
-  describe("groupBy((item: T) => string | number)", () => {
+  describe("groupBy(selector)", () => {
     it("should return a new collection with the original items grouped by the selected key", () => {
       const people = [
         { name: "Isaac", age: 26 },
@@ -28,6 +28,23 @@ describe("Collection", () => {
           [{ name: "Byte", age: 20 }],
         ],
       );
+    });
+  });
+
+  describe("unique(selector)", () => {
+    it("should return a new collection with the unique items whose uniqueness is determined using the selector argument", () => {
+      const people = [
+        { name: "Isaac", age: 26 },
+        { name: "Ari", age: 26 },
+        { name: "Byte", age: 20 },
+      ];
+
+      const uniqueAges = Collection
+        .from(people)
+        .unique((person) => person.age)
+        .toArray();
+
+      assertEquals(uniqueAges, [26, 20]);
     });
   });
 

@@ -21,21 +21,12 @@ export class Collection<T> {
     return this._array.length < 1;
   }
 
-  groupBy(keySelector: (item: T) => string | number) {
-    const keyToGroup = new Map<string | number, T[]>();
+  groupBy(keySelector: (item: T) => unknown = (x) => x) {
+    return Collection.from(this.toDict(keySelector).values().toArray());
+  }
 
-    this._array.forEach((item) => {
-      const key = keySelector(item);
-      const group = keyToGroup.get(key);
-
-      if (group) {
-        keyToGroup.set(key, group.concat(item));
-      } else {
-        keyToGroup.set(key, [item]);
-      }
-    });
-
-    return Collection.from(keyToGroup.values().toArray());
+  unique(keySelector: (item: T) => unknown = (x) => x) {
+    return Collection.from(this.toDict(keySelector).keys().toArray());
   }
 
   first(): T {
@@ -52,5 +43,20 @@ export class Collection<T> {
 
   join(sep?: string) {
     return this.toArray().join(sep);
+  }
+
+  private toDict(keySelector: (item: T) => unknown): Map<unknown, T[]> {
+    return this._array.reduce((dict, item) => {
+      const key = keySelector(item);
+      const group = dict.get(key);
+
+      if (group) {
+        dict.set(key, group.concat(item));
+      } else {
+        dict.set(key, [item]);
+      }
+
+      return dict;
+    }, new Map<unknown, T[]>());
   }
 }
