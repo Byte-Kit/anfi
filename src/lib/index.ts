@@ -1,4 +1,5 @@
 export * from "./chrono.ts";
+export * as cli from "./cli.ts";
 export * from "./collection.ts";
 export * from "./common.ts";
 export * from "./dictionary.ts";
