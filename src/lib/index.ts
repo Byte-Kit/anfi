@@ -1,3 +1,4 @@
+export { assert } from "./assert.ts";
 export * from "./chrono.ts";
 export * as cli from "./cli.ts";
 export * from "./collection.ts";
