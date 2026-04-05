@@ -1,6 +1,6 @@
 import { beforeEach, describe, it } from "@std/testing/bdd";
 import * as db from "@src/db/index.ts";
-import { FinancialAccountDao } from "./FinancialAccountDao.ts";
+import { FinancialAccountDao } from "./financial-account.ts";
 import { FinancialAccount, FinancialAccountType } from "../model/index.ts";
 import { assertEquals, assertExists } from "@std/assert";
 

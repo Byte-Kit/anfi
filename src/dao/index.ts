@@ -61,4 +61,4 @@ export abstract class BaseDao<T extends Entity> {
   protected abstract entityFromRecord(record: DbRecord): T;
 }
 
-export * from "./FinancialAccountDao.ts";
+export * from "./financial-account.ts";
