@@ -73,7 +73,7 @@
     "@std/testing": "jsr:@std/testing@1",
     "@src/": "./src/",
     "@src/lib": "./src/lib/index.ts",
-    "@src/lib/": "./src/lib/",
+    "@src/dao": "./src/dao/index.ts",
     "@types/react": "npm:@types/react@^19.2.13",
     "ink": "npm:ink@^6.6.0",
     "react": "npm:react@^19.2.4"
