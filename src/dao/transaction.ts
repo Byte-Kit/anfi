@@ -1,6 +1,6 @@
 import { DbRecord } from "../db/index.ts";
 import { Transaction } from "../model/index.ts";
-import { BaseDao } from "./index.ts";
+import { BaseDao } from "./base-dao.ts";
 
 export class TransactionDao extends BaseDao<Transaction> {
   override Table: string = "transaction";

@@ -1,7 +1,7 @@
 import { DbRecord } from "../db/index.ts";
 import { Chrono } from "../lib/index.ts";
 import { Budget } from "../model/index.ts";
-import { BaseDao } from "./index.ts";
+import { BaseDao } from "./base-dao.ts";
 
 export class BudgetDao extends BaseDao<Budget> {
   override Table: string = "budget";

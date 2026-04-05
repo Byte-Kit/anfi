@@ -1,6 +1,6 @@
 import { DbRecord } from "../db/index.ts";
 import { FinancialEvent } from "../model/index.ts";
-import { BaseDao } from "./index.ts";
+import { BaseDao } from "./base-dao.ts";
 
 export class FinancialEventDao extends BaseDao<FinancialEvent> {
   override Table: string = "financial_event";
