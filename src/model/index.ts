@@ -1,7 +1,7 @@
-export * from "./FinancialAccountModel.ts";
-export * from "./FinancialEventModel.ts";
-export * from "./TransactionModel.ts";
-export * from "./BudgetModel.ts";
+export * from "./budget.ts";
+export * from "./financial-account.ts";
+export * from "./financial-event.ts";
+export * from "./transaction.ts";
 
 export interface Entity {
   id: string;

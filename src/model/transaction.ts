@@ -1,4 +1,4 @@
-import { BaseEntity } from "./AbstractModel.ts";
+import { BaseEntity } from "./base-entity.ts";
 
 export interface TransactionData {
   amount: number;

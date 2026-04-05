@@ -1,6 +1,6 @@
 import { Chrono } from "@anfi/lib/index.ts";
+import { BaseEntity } from "./base-entity.ts";
 import { TransactionType } from "./index.ts";
-import { BaseEntity } from "./AbstractModel.ts";
 
 export interface BudgetData {
   periodStart: Chrono;
