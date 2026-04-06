@@ -38,4 +38,37 @@ describe("connection", () => {
       });
     });
   });
+
+  describe("ConnectionBuilder", () => {
+    describe("get()", () => {
+      describe(`when DbPath is not set`, () => {
+        const spies: SpyLike[] = [];
+        beforeAll(() => {
+          spies.push(stub(Deno.env, "get", () => undefined));
+        });
+
+        afterAll(() => {
+          spies.forEach((spy) => spy.restore());
+        });
+
+        it("should initialize an in-memory database", () => {
+          assertExists(new dbConnection.ConnectionBuilder().get());
+        });
+      });
+
+      describe(`when ${Config.Key.DbPath} is set`, () => {
+        afterEach(async () => {
+          await dbUtil.removeAsync();
+        });
+
+        it("should initialize a database at the location defined by DB_PATH", async () => {
+          assertExists(new dbConnection.ConnectionBuilder().get());
+          const actualPathToDbFile = await Deno.stat(
+            Config.get(Config.Key.DbPath) as string,
+          );
+          assert(actualPathToDbFile.isFile);
+        });
+      });
+    });
+  });
 });

@@ -13,3 +13,9 @@ export function connect() {
   Deno.mkdirSync(dbPathDir, { recursive: true });
   return new DatabaseSync(dbPath);
 }
+
+export class ConnectionBuilder {
+  get() {
+    return connect();
+  }
+}
