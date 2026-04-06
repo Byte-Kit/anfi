@@ -9,7 +9,7 @@ import {
   SpyLike,
   stub,
 } from "@std/testing/mock";
-import { UpsertFinancialAccountDto } from "./financial-account.schema.ts";
+import * as schema from "./financial-account.schema.ts";
 import { FinancialAccountService } from "./financial-account.ts";
 
 type Stubs = {
@@ -51,10 +51,10 @@ describe("financial-account", () => {
           },
           crypto.randomUUID(),
         );
-        const updatedAccountData: UpsertFinancialAccountDto = {
+        const updatedAccountData = {
           id: existingAccount.id,
           name: "Investment",
-          type: existingAccount.type,
+          type: "Liability",
         };
 
         stubs.financialAccountDao.getById?.restore();
@@ -88,7 +88,12 @@ describe("financial-account", () => {
         assertSpyCall(stubs.financialAccountDao.save, 0, {
           args: [
             new model.FinancialAccount(
-              { ...updatedAccountData },
+              {
+                name: updatedAccountData.name,
+                type: schema.FinancialAccountTypeCode.parse(
+                  updatedAccountData.type,
+                ),
+              },
               updatedAccountData.id!,
             ),
           ],

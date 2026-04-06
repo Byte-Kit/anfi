@@ -8,8 +8,8 @@ export class FinancialAccountService {
     new db.ConnectionBuilder().get(),
   );
 
-  upsertFinancialAccount(dto: schema.UpsertFinancialAccountDto) {
-    schema.UpsertFinancialAccountDto.parse(dto);
+  upsertFinancialAccount(input: Record<string, unknown>) {
+    const dto = schema.UpsertFinancialAccountDto.parse(input);
 
     const existingAccount = dto.id
       ? this._financialAccountDao.getById(dto.id)
