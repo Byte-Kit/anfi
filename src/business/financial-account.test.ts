@@ -1,14 +1,43 @@
+import { FinancialAccountDao } from "@src/dao";
 import * as db from "@src/db";
 import * as model from "@src/model";
+import { assertExists } from "@std/assert/exists";
 import { beforeEach, describe, it } from "@std/testing/bdd";
-import { assertSpyCallArgs, assertSpyCalls, stub } from "@std/testing/mock";
-import { FinancialAccountDao } from "../dao/financial-account.ts";
-import { upsertFinancialAccount } from "./financial-account.ts";
+import {
+  assertSpyCall,
+  assertSpyCalls,
+  SpyLike,
+  stub,
+} from "@std/testing/mock";
+import { UpsertFinancialAccountDto } from "./financial-account.schema.ts";
+import { FinancialAccountService } from "./financial-account.ts";
+
+type Stubs = {
+  connectionBuilder: {
+    get?: SpyLike;
+  };
+  financialAccountDao: {
+    getById?: SpyLike;
+    save?: SpyLike;
+  };
+};
 
 describe("financial-account", () => {
-  beforeEach(async () => {
-    await db.removeAsync();
-    await db.migrateAsync();
+  const stubs: Stubs = {
+    connectionBuilder: {},
+    financialAccountDao: {},
+  };
+  let financialAccountService: FinancialAccountService;
+
+  beforeEach(() => {
+    stubs.connectionBuilder.get?.restore();
+    stubs.connectionBuilder.get = stub(
+      db.ConnectionBuilder.prototype,
+      "get",
+      () => ({} as db.DbConnection),
+    );
+
+    financialAccountService = new FinancialAccountService();
   });
 
   describe("upsertFinancialAccount(dto)", () => {
@@ -22,38 +51,49 @@ describe("financial-account", () => {
           },
           crypto.randomUUID(),
         );
-        const updatedAccountData = {
+        const updatedAccountData: UpsertFinancialAccountDto = {
           id: existingAccount.id,
           name: "Investment",
           type: existingAccount.type,
         };
 
-        const daoStubs = {
-          getById: stub(
-            FinancialAccountDao.prototype,
-            "getById",
-            (_id: string) => existingAccount,
-          ),
-          save: stub(
-            FinancialAccountDao.prototype,
-            "save",
-            (_entity: model.FinancialAccount) => 1,
-          ),
-        };
+        stubs.financialAccountDao.getById?.restore();
+        stubs.financialAccountDao.getById = stub(
+          FinancialAccountDao.prototype,
+          "getById",
+          (_id: string) => existingAccount,
+        );
+
+        stubs.financialAccountDao.save?.restore();
+        stubs.financialAccountDao.save = stub(
+          FinancialAccountDao.prototype,
+          "save",
+          (_entity: model.FinancialAccount) => 1,
+        );
 
         // Act
-        upsertFinancialAccount(updatedAccountData);
+        financialAccountService.upsertFinancialAccount(updatedAccountData);
 
         // Assert
-        assertSpyCalls(daoStubs.getById, 1);
-        assertSpyCallArgs(daoStubs.getById, 0, [existingAccount.id]);
-        assertSpyCalls(daoStubs.save, 1);
-        assertSpyCallArgs(daoStubs.save, 0, [
-          new model.FinancialAccount(
-            { ...updatedAccountData },
-            updatedAccountData.id,
-          ),
-        ]);
+        assertExists(stubs.connectionBuilder.get);
+        assertSpyCalls(stubs.connectionBuilder.get, 1);
+
+        assertSpyCalls(stubs.financialAccountDao.getById, 1);
+        assertSpyCall(stubs.financialAccountDao.getById, 0, {
+          args: [existingAccount.id],
+          returned: existingAccount,
+        });
+
+        assertSpyCalls(stubs.financialAccountDao.save, 1);
+        assertSpyCall(stubs.financialAccountDao.save, 0, {
+          args: [
+            new model.FinancialAccount(
+              { ...updatedAccountData },
+              updatedAccountData.id!,
+            ),
+          ],
+          returned: 1,
+        });
       });
     });
   });
