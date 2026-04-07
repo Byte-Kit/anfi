@@ -38,21 +38,26 @@ describe("StringBuilder", () => {
     });
   });
 
-  describe("line", () => {
-    describe("when invoked with no arguments", () => {
-      it("should does nothing", () => {
-        assertEquals(new StringBuilder().line().get(), "");
-      });
-    });
-
+  describe("line(value)", () => {
     describe("when invoked with one or more arguments", () => {
-      it("treat each argument as a paragraph and append to output", () => {
+      it("treat the argument as a paragraph and append to output", () => {
         assertEquals(
-          new StringBuilder().line("Hello,", "My name is Isaac")
+          new StringBuilder().line("Hello,").line("My name is Isaac")
             .get(),
           "Hello,\nMy name is Isaac\n",
         );
       });
+    });
+  });
+
+  describe("lines(values, sep)", () => {
+    it("should treat each argument as a paragraph and append to output", () => {
+      assertEquals(
+        new StringBuilder()
+          .lines(["Hello,", "My name is Isaac"], "")
+          .get(),
+        "Hello,\nMy name is Isaac\n",
+      );
     });
   });
 });

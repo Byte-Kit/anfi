@@ -168,8 +168,8 @@ export class RuleExecutorFactory<T extends Opts> {
       if (subCommands.length > 0) {
         helpBuilder
           .l("Commands:")
-          .l(
-            ...subCommands.map((subCommand) =>
+          .lines(
+            subCommands.map((subCommand) =>
               new StringBuilder().s(4).a(subCommand).get()
             ),
           )
@@ -179,8 +179,8 @@ export class RuleExecutorFactory<T extends Opts> {
       if (options.length > 0) {
         helpBuilder
           .l("Options:")
-          .l(
-            ...options.map((option) =>
+          .lines(
+            options.map((option) =>
               new StringBuilder().s(4).a("--").a(option).get()
             ),
           );

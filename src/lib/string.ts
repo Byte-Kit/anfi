@@ -55,12 +55,12 @@ export class StringBuilder {
     return this.append(values.join(" ")).append(" ");
   }
 
-  line(...values: string[]) {
-    if (values.length === 0) {
-      return this;
-    }
+  line(value: string) {
+    return this.append(value).newLine();
+  }
 
-    return this.append(values.join("\n")).newLine();
+  lines(values: string[], sep: string = "") {
+    return this.append(...values.join(`${sep}\n`)).newLine();
   }
 }
 
