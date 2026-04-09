@@ -1,8 +1,8 @@
+import * as db from "@src/db";
+import { FinancialAccount, FinancialAccountType } from "@src/model";
+import { assertArrayIncludes, assertEquals, assertExists } from "@std/assert";
 import { beforeEach, describe, it } from "@std/testing/bdd";
-import * as db from "@src/db/index.ts";
 import { FinancialAccountDao } from "./financial-account.ts";
-import { FinancialAccount, FinancialAccountType } from "../model/index.ts";
-import { assertEquals, assertExists } from "@std/assert";
 
 describe("FinancialAccountDao", () => {
   let dao!: FinancialAccountDao;
@@ -13,16 +13,20 @@ describe("FinancialAccountDao", () => {
     dao = new FinancialAccountDao(db.connect());
   });
 
-  describe("save(TEntity)", () => {
+  describe("save(...entities)", () => {
     describe("when saving a non-existent record", () => {
       it("should insert a new record", () => {
         const insertedRecordCount = dao.save(
           new FinancialAccount({
             type: FinancialAccountType.Asset,
-            name: "Checking Account",
+            name: "Checking",
+          }),
+          new FinancialAccount({
+            type: FinancialAccountType.Asset,
+            name: "Investment",
           }),
         );
-        assertEquals(insertedRecordCount, 1);
+        assertEquals(insertedRecordCount, 2);
       });
     });
 
@@ -70,6 +74,24 @@ describe("FinancialAccountDao", () => {
       it("should return null", () => {
         assertEquals(dao.getById(crypto.randomUUID()), null);
       });
+    });
+  });
+
+  describe("getAll()", () => {
+    it("should return all records", () => {
+      const records: FinancialAccount[] = [
+        new FinancialAccount({
+          type: FinancialAccountType.Asset,
+          name: "Checking Account",
+        }),
+        new FinancialAccount({
+          type: FinancialAccountType.Expense,
+          name: "Grocery",
+        }),
+      ];
+
+      records.forEach((record) => dao.save(record));
+      assertArrayIncludes(dao.getAll(), records);
     });
   });
 });
