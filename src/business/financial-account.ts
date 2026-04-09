@@ -9,7 +9,7 @@ export class FinancialAccountService {
   );
 
   upsertFinancialAccount(input: Record<string, unknown>) {
-    const dto = schema.UpsertFinancialAccountDto.parse(input);
+    const dto = schema.UpsertFinancialAccount.parse(input);
 
     const existingAccount = dto.id
       ? this._financialAccountDao.getById(dto.id)
@@ -25,7 +25,13 @@ export class FinancialAccountService {
       new model.FinancialAccount({
         type: dto.type,
         name: dto.name,
-      }),
+      }, dto.id),
+    );
+  }
+
+  listFinancialAccounts(): schema.FinancialAccount[] {
+    return this._financialAccountDao.getAll().map((rec) =>
+      schema.FinancialAccount.parse(rec)
     );
   }
 }

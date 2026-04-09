@@ -1,6 +1,7 @@
 import { cli } from "@src/lib";
-import { AccountRules } from "./account.ts";
+import { ListAccountRules } from "./account-list.ts";
 import { NewAccountRules } from "./account-new.ts";
+import { AccountRules } from "./account.ts";
 
 export const rules: cli.Rule[] = [
   new cli.RuleBuilder()
@@ -10,6 +11,7 @@ export const rules: cli.Rule[] = [
 
   ...AccountRules,
   ...NewAccountRules,
+  ...ListAccountRules,
 
   new cli.RuleBuilder()
     .thenDo(() => console.log("Error"))

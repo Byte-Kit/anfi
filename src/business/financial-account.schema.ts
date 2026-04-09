@@ -7,24 +7,59 @@ export const FinancialAccountType = z.enum([
   "Revenue",
   "Expense",
 ]);
+export const FinancialAccountTypeCode = z.enum({
+  Asset: 1,
+  Liability: 2,
+  Equity: 3,
+  Revenue: 4,
+  Expense: 5,
+});
 export type FinancialAccountType = z.infer<typeof FinancialAccountType>;
-
-export const FinancialAccountTypeCode = FinancialAccountType.transform(
-  (value) => {
-    if (value === "Asset") return 1;
-    else if (value === "Liability") return 2;
-    else if (value === "Equity") return 3;
-    else if (value === "Revenue") return 4;
-    else return 5;
-  },
-);
 export type FinancialAccountTypeCode = z.infer<typeof FinancialAccountTypeCode>;
 
-export const UpsertFinancialAccountDto = z.object({
-  id: z.string().nullable(),
+export const FinancialAccount = z.object({
+  id: z.uuid(),
   name: z.string(),
-  type: FinancialAccountTypeCode,
+  type: z.preprocess(
+    (value: string | number) => {
+      if (Number.isSafeInteger(value)) {
+        if (value === 1) return "Asset";
+        else if (value === 2) return "Liability";
+        else if (value === 3) return "Equity";
+        else if (value === 4) return "Revenue";
+        else if (value === 5) return "Expense";
+        else return "";
+      }
+      return String(value);
+    },
+    FinancialAccountType,
+  ),
 });
-export type UpsertFinancialAccountDto = z.infer<
-  typeof UpsertFinancialAccountDto
->;
+export type FinancialAccount = z.infer<typeof FinancialAccount>;
+
+export const UpsertFinancialAccount = FinancialAccount.extend({
+  id: z.uuid().nullable(),
+  type: z.preprocess(
+    (value: string | number) => {
+      if (Number.isSafeInteger(value)) {
+        return Number(value);
+      }
+      switch (String(value).toLowerCase()) {
+        case "asset":
+          return 1;
+        case "liability":
+          return 2;
+        case "equity":
+          return 3;
+        case "revenue":
+          return 4;
+        case "expense":
+          return 5;
+        default:
+          return -1;
+      }
+    },
+    FinancialAccountTypeCode,
+  ),
+});
+export type UpsertFinancialAccount = z.infer<typeof UpsertFinancialAccount>;
