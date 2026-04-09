@@ -17,7 +17,7 @@ export class FinancialAccount extends BaseEntity
   type: FinancialAccountType;
   name: string;
 
-  constructor({ type, name }: FinancialAccountData, id?: string) {
+  constructor({ type, name }: FinancialAccountData, id: string | null = null) {
     super(id);
     this.type = type;
     this.name = name;

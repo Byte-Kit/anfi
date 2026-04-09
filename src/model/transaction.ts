@@ -17,7 +17,7 @@ export class Transaction extends BaseEntity implements TransactionData {
 
   constructor(
     { amount, type, financialAccountId, financialEventId }: TransactionData,
-    id?: string,
+    id: string | null = null,
   ) {
     super(id);
     this.amount = amount;

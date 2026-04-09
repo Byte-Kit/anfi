@@ -20,7 +20,7 @@ export class Budget extends BaseEntity implements BudgetData {
 
   constructor(
     { periodStart, periodEnd, type, amount, financialAccountId }: BudgetData,
-    id?: string,
+    id: string | null = null,
   ) {
     super(id);
     this.periodStart = periodStart;
