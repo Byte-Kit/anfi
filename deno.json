@@ -67,6 +67,7 @@
   },
   "imports": {
     "@anfi/": "./src/",
+    "@cliffy/table": "jsr:@cliffy/table@^1.0.0",
     "@std/assert": "jsr:@std/assert@1",
     "@std/cli": "jsr:@std/cli@1",
     "@std/fs": "jsr:@std/fs@^1.0.22",
