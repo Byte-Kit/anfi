@@ -9,7 +9,7 @@ interface NewAccountOpts extends cli.Opts {
 function builder() {
   return new cli
     .RuleBuilder<NewAccountOpts>()
-    .parser({ string: ["name"] })
+    .parser({ string: ["name", "type"] })
     .ifPositionals("account", "new");
 }
 
@@ -27,6 +27,7 @@ export const NewAccountRules: cli.Rule[] = [
         name: opts.name,
         type: opts.type,
       });
+      console.log("Ok");
     })
     .get(),
 ];
