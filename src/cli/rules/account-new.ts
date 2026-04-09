@@ -1,5 +1,5 @@
-import { assert, cli } from "@src/lib";
 import { FinancialAccountService } from "@src/business/financial-account.ts";
+import { assert, cli } from "@src/lib";
 
 interface NewAccountOpts extends cli.Opts {
   type: string;
@@ -19,12 +19,8 @@ export const NewAccountRules: cli.Rule[] = [
     .then((e) => e.printHelp("new", [], ["name", "type"]))
     .get(),
   builder()
-    .ifOpts(({ type }) => assert.string(type).notBlank())
-    .ifOpts(({ name }) => assert.string(name).notBlank())
     .thenDo((args) => {
       const opts: NewAccountOpts = args.opts();
-      console.log(`Creating a new account: ${opts.name}`);
-
       const service = new FinancialAccountService();
       service.upsertFinancialAccount({
         id: null,
