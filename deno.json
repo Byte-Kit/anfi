@@ -63,7 +63,7 @@
     "dev:tui": "deno run -P --env-file=.env src/tui/index.tsx",
     "test": "deno test -P --env-file=.env.test --coverage",
     "test:watch": "deno test -P --env-file=.env.test --watch",
-    "generate-open-api-spec": "deno run src/openapi.ts"
+    "build:cli": "deno compile --output=./build/anfi -P --env-file=.env src/cli/index.ts"
   },
   "imports": {
     "@anfi/": "./src/",
