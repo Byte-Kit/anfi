@@ -69,5 +69,26 @@ export abstract class BaseDao<T extends Entity> {
     return records.map((record) => this.entityFromRecord(record));
   }
 
+  deleteByIds(ids: string[]): number {
+    if (ids.length === 0) {
+      return 0;
+    }
+
+    const sql = new StringBuilder()
+      .l(`DELETE FROM ${this.Table}`)
+      .l("WHERE id IN (")
+      .lines(
+        ids.map((_) =>
+          new StringBuilder()
+            .s(2).a("?").get()
+        ),
+        ",",
+      )
+      .l(")")
+      .l(";")
+      .get();
+    return Number(this.conn.prepare(sql).run(...ids).changes);
+  }
+
   protected abstract entityFromRecord(record: DbRecord): T;
 }

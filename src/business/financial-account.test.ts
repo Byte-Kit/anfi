@@ -22,6 +22,7 @@ type Stubs = {
     getById?: SpyLike;
     save?: SpyLike;
     getAll?: SpyLike;
+    deleteByIds?: SpyLike;
   };
 };
 
@@ -231,6 +232,25 @@ describe("financial-account", () => {
 
       const expected = records.map((rec) => schema.FinancialAccount.parse(rec));
       assertArrayIncludes(actual, expected);
+    });
+  });
+
+  describe("deleteFinancialAccountByIds(ids)", () => {
+    it("should invoke DAO", () => {
+      stubs.financialAccountDao.deleteByIds?.restore();
+      stubs.financialAccountDao.deleteByIds = stub(
+        FinancialAccountDao.prototype,
+        "deleteByIds",
+        (_ids) => 0,
+      );
+
+      financialAccountService.deleteFinancialAccountByIds([]);
+
+      assertExists(stubs.financialAccountDao.deleteByIds);
+      assertSpyCalls(stubs.financialAccountDao.deleteByIds, 1);
+      assertSpyCall(stubs.financialAccountDao.deleteByIds, 0, {
+        args: [[]],
+      });
     });
   });
 });

@@ -34,4 +34,8 @@ export class FinancialAccountService {
       schema.FinancialAccount.parse(rec)
     );
   }
+
+  deleteFinancialAccountByIds(ids: string[]) {
+    return this._financialAccountDao.deleteByIds(ids);
+  }
 }

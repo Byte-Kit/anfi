@@ -94,4 +94,44 @@ describe("FinancialAccountDao", () => {
       assertArrayIncludes(dao.getAll(), records);
     });
   });
+
+  describe("deleteByIds(ids)", () => {
+    describe("when no id is provided", () => {
+      it("should make no change", () => {
+        const records: FinancialAccount[] = [
+          new FinancialAccount({
+            type: FinancialAccountType.Asset,
+            name: "Checking Account",
+          }),
+          new FinancialAccount({
+            type: FinancialAccountType.Expense,
+            name: "Grocery",
+          }),
+        ];
+
+        dao.save(...records);
+        const deletedCount = dao.deleteByIds([]);
+        assertEquals(deletedCount, 0);
+      });
+    });
+
+    describe("when non-empty ids provided", () => {
+      it("should delete records with specified IDs", () => {
+        const records: FinancialAccount[] = [
+          new FinancialAccount({
+            type: FinancialAccountType.Asset,
+            name: "Checking Account",
+          }),
+          new FinancialAccount({
+            type: FinancialAccountType.Expense,
+            name: "Grocery",
+          }),
+        ];
+
+        dao.save(...records);
+        const deletedCount = dao.deleteByIds(records.map((rec) => rec.id));
+        assertEquals(deletedCount, records.length);
+      });
+    });
+  });
 });
