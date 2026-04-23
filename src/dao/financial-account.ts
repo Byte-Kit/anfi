@@ -1,5 +1,5 @@
-import { DbRecord } from "@src/db/index.ts";
-import { FinancialAccount } from "../model/index.ts";
+import { DbRecord } from "@src/db";
+import { FinancialAccount } from "@src/model";
 import { BaseDao } from "./base-dao.ts";
 
 export class FinancialAccountDao extends BaseDao<FinancialAccount> {

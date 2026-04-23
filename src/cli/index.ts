@@ -1,9 +1,9 @@
-import { cli, StringBuilder } from "@src/lib";
+import { StringBuilder } from "@src/lib";
 import { ZodError } from "zod";
-import { rules } from "./rules/index.ts";
+import { anfi } from "./command/index.ts";
 
 try {
-  new cli.Command(new cli.Rules(...rules)).run(Deno.args);
+  anfi.execute(Deno.args);
 } catch (err) {
   if (err instanceof ZodError) {
     console.error(

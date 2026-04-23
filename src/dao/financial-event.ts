@@ -1,5 +1,5 @@
-import { DbRecord } from "../db/index.ts";
-import { FinancialEvent } from "../model/index.ts";
+import { DbRecord } from "@src/db";
+import { FinancialEvent } from "@src/model";
 import { BaseDao } from "./base-dao.ts";
 
 export class FinancialEventDao extends BaseDao<FinancialEvent> {

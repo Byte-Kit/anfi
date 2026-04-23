@@ -2,11 +2,16 @@ import { FinancialAccountDao } from "@src/dao";
 import * as db from "@src/db";
 import * as model from "@src/model";
 import * as schema from "./financial-account.schema.ts";
+import { DbService } from "./common.ts";
 
-export class FinancialAccountService {
+export class FinancialAccountService implements DbService {
   private _financialAccountDao = new FinancialAccountDao(
-    new db.ConnectionBuilder().get(),
+    this.getDbConnection(),
   );
+
+  getDbConnection() {
+    return new db.ConnectionBuilder().get();
+  }
 
   upsertFinancialAccount(input: Record<string, unknown>) {
     const dto = schema.UpsertFinancialAccount.parse(input);
