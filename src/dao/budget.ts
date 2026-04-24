@@ -1,7 +1,7 @@
-import { DbRecord } from "../db/index.ts";
-import { Chrono } from "../lib/index.ts";
-import { Budget } from "../model/index.ts";
-import { BaseDao } from "./base-dao.ts";
+import { DbRecord } from "@anfi/db";
+import { Chrono } from "@anfi/lib";
+import { Budget } from "@anfi/model";
+import { BaseDao } from "./common.ts";
 
 export class BudgetDao extends BaseDao<Budget> {
   override Table: string = "budget";

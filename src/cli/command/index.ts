@@ -1,4 +1,4 @@
-import { cli } from "@src/lib";
+import { cli } from "@anfi/lib";
 import { accountCommand } from "./account.ts";
 import { transactionCommand } from "./transaction.ts";
 

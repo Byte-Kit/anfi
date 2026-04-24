@@ -106,10 +106,16 @@ export class Dict<K, V> {
     dict: Dict<K, V>,
     strategy: "preserve" | "overwrite" = "preserve",
   ) {
+    const mergedDict = this.copy();
     dict.keys().forEach((key) => {
-      if (!this.hasKey(key) || strategy === "overwrite") {
-        this.set(key, dict.getValue(key));
+      if (!mergedDict.hasKey(key) || strategy === "overwrite") {
+        mergedDict.set(key, dict.getValue(key));
       }
     });
+    return mergedDict;
+  }
+
+  copy() {
+    return new Dict(this.entries());
   }
 }

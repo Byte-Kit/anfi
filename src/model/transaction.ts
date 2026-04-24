@@ -1,4 +1,4 @@
-import { BaseEntity } from "./base-entity.ts";
+import { BaseEntity } from "@anfi/model/common.ts";
 
 export interface TransactionData {
   amount: number;

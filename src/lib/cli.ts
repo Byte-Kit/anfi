@@ -1,50 +1,75 @@
-import { StringBuilder } from "@src/lib";
+import { StringBuilder } from "@anfi/lib";
 import * as cli from "@std/cli";
 
-type Consumer<T> = (_: T) => void;
-
-type Arg =
+type Args =
   & Record<string, never>
   & Record<"_", string[]>
   & Record<"help", boolean>
   & Record<"version", boolean>;
 
-type ArgDescriptor = {
-  key: string;
-  type: "option" | "flag";
-  description: string;
-  default: unknown;
-};
+export enum ArgsDescriptorType {
+  Option,
+  Flag,
+}
 
-class ArgDescriptorFactory {
-  static option(key: string, description: string): ArgDescriptor {
-    return {
-      key,
-      description,
-      type: "option",
-      default: "",
-    };
+/**
+ * Specification for how a specific argument is parsed.
+ * Currently support two types of arguments: option or flag.
+ *
+ * An option is a string non-positional argument.
+ * A flag is a boolean non-positional argument.
+ *
+ * @example
+ * ```ts
+ * const stringOption = ArgDescriptor.optionFrom("name", "Name of the person.")
+ * const booleanOption = ArgDescriptor.optionFrom("employee", "Indicates whether the person is an employee.")
+ * ```
+ */
+export class ArgsDescriptor {
+  key: string;
+  type: ArgsDescriptorType;
+  description: string;
+  defaultValue: unknown;
+
+  constructor(
+    key: string,
+    type: ArgsDescriptorType,
+    description: string,
+    defaultValue: unknown,
+  ) {
+    this.key = key;
+    this.type = type;
+    this.description = description;
+    this.defaultValue = defaultValue;
   }
 
-  static flag(key: string, description: string): ArgDescriptor {
-    return {
-      key,
-      description,
-      type: "flag",
-      default: false,
-    };
+  static optionFrom(key: string, description: string) {
+    return new ArgsDescriptor(key, ArgsDescriptorType.Option, description, "");
+  }
+
+  static flagFrom(key: string, description: string) {
+    return new ArgsDescriptor(key, ArgsDescriptorType.Flag, description, false);
+  }
+
+  isOption() {
+    return this.type === ArgsDescriptorType.Option;
+  }
+
+  isFlag() {
+    return this.type === ArgsDescriptorType.Flag;
   }
 }
 
 /**
  * Abstraction over {@link cli.parseArgs}.
- * `help` and `version` are parsed by default.
+ * `--help` and `--version` are parsed by default.
  *
  * @example
  * ```ts
  * const parser = new Parser({
- *   string: ["name", "type"],
- *   boolean: ["employee"]
+ *  ArgsDescriptor.optionFrom("name"),
+ *  ArgsDescriptor.optionFrom("type"),
+ *  ArgsDescriptor.flagFrom("employee")
  * });
  *
  * const args = parser.parse([
@@ -62,14 +87,14 @@ class ArgDescriptorFactory {
  * console.log(args.type)     // "Contract"
  * ```
  */
-export class Parser<T extends Arg> {
-  private _descriptors: ArgDescriptor[] = [];
+class Parser<T extends Args> {
+  private _descriptors: ArgsDescriptor[] = [];
 
   get descriptors() {
     return this._descriptors;
   }
 
-  constructor(descriptors: ArgDescriptor[] = []) {
+  constructor(descriptors: ArgsDescriptor[] = []) {
     this._descriptors = descriptors;
   }
 
@@ -81,15 +106,11 @@ export class Parser<T extends Arg> {
    */
   parse(input: string[]) {
     const parseOptions: cli.ParseOptions = {
-      string: this._descriptors
-        .filter((d) => d.type === "option")
-        .map((d) => d.key),
-      boolean: this._descriptors
-        .filter((d) => d.type === "flag")
-        .map((d) => d.key),
+      string: this._descriptors.filter((d) => d.isOption()).map((d) => d.key),
+      boolean: this._descriptors.filter((d) => d.isFlag()).map((d) => d.key),
       default: this._descriptors.reduce<Record<string, unknown>>(
-        (mapping, { key, type }) => {
-          mapping[key] = type === "option" ? "" : false;
+        (mapping, d) => {
+          mapping[d.key] = d.isOption() ? "" : false;
           return mapping;
         },
         {},
@@ -109,24 +130,24 @@ export class Parser<T extends Arg> {
  * console.log(args.name) // "Isaac"
  * ```
  */
-export class ParserBuilder<T extends Arg> {
-  private static DEFAULT_DESCRIPTORS: ArgDescriptor[] = [
-    ArgDescriptorFactory.flag("help", "Show this message"),
-    ArgDescriptorFactory.flag("version", "Show version number"),
+export class ParserBuilder<T extends Args> {
+  private static DEFAULT_DESCRIPTORS: ArgsDescriptor[] = [
+    ArgsDescriptor.flagFrom("help", "Show this message"),
+    ArgsDescriptor.flagFrom("version", "Show version number"),
   ];
 
-  private _descriptors: ArgDescriptor[] = [];
+  private _descriptors: ArgsDescriptor[] = [];
 
   option<K extends string>(key: K, description: string = "") {
     this._descriptors.push(
-      ArgDescriptorFactory.option(key, description),
+      ArgsDescriptor.optionFrom(key, description),
     );
     return this as ParserBuilder<T & Record<K, string>>;
   }
 
   flag<K extends string>(key: K, description: string = "") {
     this._descriptors.push(
-      ArgDescriptorFactory.flag(key, description),
+      ArgsDescriptor.flagFrom(key, description),
     );
     return this as ParserBuilder<T & Record<K, boolean>>;
   }
@@ -163,7 +184,7 @@ type CommandSubCommandDescriptor = {
   description: string;
 };
 
-class CommandExecutionContext<T extends Arg> {
+class CommandExecutionContext<T extends Args> {
   private _input: string[] = [];
   private _args: T;
   private _isDone: boolean = false;
@@ -190,9 +211,9 @@ class CommandExecutionContext<T extends Arg> {
   }
 }
 
-type CommandAction<T extends Arg> = Consumer<CommandExecutionContext<T>>;
+type CommandAction<T extends Args> = (_: CommandExecutionContext<T>) => void;
 
-export class Command<T extends Arg> {
+class Command<T extends Args> {
   private _descriptor: CommandDescriptor;
   private _parser: Parser<T>;
   private _preActions: CommandAction<T>[] = [];
@@ -236,7 +257,7 @@ export class Command<T extends Arg> {
   }
 }
 
-class CommandBuilder<T extends Arg> {
+export class CommandBuilder<T extends Args> {
   private _parserBuilder: ParserBuilder<T> = new ParserBuilder<T>();
 
   private _descriptor: CommandDescriptor = {
@@ -274,7 +295,7 @@ class CommandBuilder<T extends Arg> {
     return this;
   }
 
-  subCommand<TSubcommand extends Arg>(subCommand: Command<TSubcommand>) {
+  subCommand<TSubcommand extends Args>(subCommand: Command<TSubcommand>) {
     this._descriptor.subCommands.push({
       name: subCommand.descriptor.name,
       description: subCommand.descriptor.description,
@@ -339,28 +360,11 @@ class CommandBuilder<T extends Arg> {
   }
 }
 
-// new CommandBuilder()
-//   .name("anfi")
-//   .description("Finance management utility.")
-//   .subCommand((c) =>
-//     c
-//       .name("account")
-//       .description("Account management.")
-//       .subCommand((c) =>
-//         c
-//           .name("new")
-//           .description("Create a new financial account.")
-//           .option("name", "The account name")
-//           .option("type", "The type of the account")
-//           .action((exec) => {
-//             exec.done();
-//           })
-//       )
-//   )
-//   .build()
-//   .execute(Deno.args);
+export function builder() {
+  return new CommandBuilder();
+}
 
-function printHelp(descriptor: CommandDescriptor) {
+export function printHelp(descriptor: CommandDescriptor) {
   const helpBuilder = new StringBuilder();
 
   if (descriptor.description) {
@@ -400,8 +404,4 @@ function printHelp(descriptor: CommandDescriptor) {
   }
 
   console.log(helpBuilder.get());
-}
-
-export function builder() {
-  return new CommandBuilder();
 }

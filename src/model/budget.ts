@@ -1,11 +1,12 @@
-import { Chrono } from "@anfi/lib/index.ts";
-import { BaseEntity } from "./base-entity.ts";
-import { TransactionType } from "./index.ts";
+import { Chrono } from "@anfi/lib";
+import { BaseEntity } from "./common.ts";
+
+export type BudgetType = "Credit" | "Debit";
 
 export interface BudgetData {
   periodStart: Chrono;
   periodEnd: Chrono;
-  type: TransactionType;
+  type: BudgetType;
   amount: number;
 
   financialAccountId: string;
@@ -14,7 +15,7 @@ export interface BudgetData {
 export class Budget extends BaseEntity implements BudgetData {
   periodStart: Chrono;
   periodEnd: Chrono;
-  type: TransactionType;
+  type: BudgetType;
   amount: number;
   financialAccountId: string;
 

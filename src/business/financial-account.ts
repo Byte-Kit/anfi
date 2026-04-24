@@ -1,6 +1,6 @@
-import { FinancialAccountDao } from "@src/dao";
-import * as db from "@src/db";
-import * as model from "@src/model";
+import { FinancialAccountDao } from "@anfi/dao";
+import * as db from "@anfi/db";
+import * as model from "@anfi/model";
 import * as schema from "./financial-account.schema.ts";
 import { DbService } from "./common.ts";
 

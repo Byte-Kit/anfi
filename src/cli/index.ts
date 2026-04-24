@@ -1,4 +1,4 @@
-import { StringBuilder } from "@src/lib";
+import { StringBuilder } from "@anfi/lib";
 import { ZodError } from "zod";
 import { anfi } from "./command/index.ts";
 

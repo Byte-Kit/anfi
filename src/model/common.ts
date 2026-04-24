@@ -1,4 +1,6 @@
-import { Entity } from "./index.ts";
+export interface Entity {
+  id: string;
+}
 
 export abstract class BaseEntity implements Entity {
   id: string;

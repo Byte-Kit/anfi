@@ -1,4 +1,4 @@
-import { cli } from "@src/lib";
+import { cli } from "@anfi/lib";
 import { editAccountCommand } from "./account-edit.ts";
 import { listAccountCommand } from "./account-list.ts";
 import { newAccountCommand } from "./account-new.ts";

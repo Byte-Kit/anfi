@@ -1,6 +1,6 @@
-import { FinancialAccountDao } from "@src/dao";
-import * as db from "@src/db";
-import * as model from "@src/model";
+import { FinancialAccountDao } from "@anfi/dao";
+import * as db from "@anfi/db";
+import * as model from "@anfi/model";
 import { assertArrayIncludes, assertEquals } from "@std/assert";
 import { assertExists } from "@std/assert/exists";
 import { beforeEach, describe, it } from "@std/testing/bdd";

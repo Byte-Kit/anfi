@@ -1,6 +1,6 @@
-import { DbConnection, DbRecord } from "@src/db";
-import { camelToSnakeCase, StringBuilder } from "@src/lib";
-import { Entity } from "../model/index.ts";
+import { DbConnection, DbRecord } from "@anfi/db";
+import { camelToSnakeCase, StringBuilder } from "@anfi/lib";
+import { Entity } from "@anfi/model";
 
 export abstract class BaseDao<T extends Entity> {
   abstract readonly Table: string;

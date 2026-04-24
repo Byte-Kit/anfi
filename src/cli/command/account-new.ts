@@ -1,5 +1,5 @@
-import { cli } from "@src/lib";
-import { FinancialAccountService } from "@src/business/financial-account.ts";
+import { FinancialAccountService } from "@anfi/business";
+import { cli } from "@anfi/lib";
 
 export const newAccountCommand = cli
   .builder()

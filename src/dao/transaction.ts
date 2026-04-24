@@ -1,6 +1,6 @@
-import { DbRecord } from "../db/index.ts";
-import { Transaction } from "../model/index.ts";
-import { BaseDao } from "./base-dao.ts";
+import { DbRecord } from "@anfi/db";
+import { Transaction } from "@anfi/model";
+import { BaseDao } from "./common.ts";
 
 export class TransactionDao extends BaseDao<Transaction> {
   override Table: string = "transaction";

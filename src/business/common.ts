@@ -1,4 +1,4 @@
-import { DbConnection } from "@src/db";
+import { DbConnection } from "@anfi/db";
 
 export interface DbService {
   getDbConnection(): DbConnection;

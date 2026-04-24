@@ -1,6 +1,6 @@
 import { Table } from "@cliffy/table";
-import { FinancialAccountService } from "@src/business/financial-account.ts";
-import { cli } from "@src/lib";
+import { FinancialAccountService } from "@anfi/business";
+import { cli } from "@anfi/lib";
 
 export const removeAccountCommand = cli
   .builder()

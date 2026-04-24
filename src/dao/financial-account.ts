@@ -1,6 +1,6 @@
-import { DbRecord } from "@src/db";
-import { FinancialAccount } from "@src/model";
-import { BaseDao } from "./base-dao.ts";
+import { DbRecord } from "@anfi/db";
+import { FinancialAccount } from "@anfi/model";
+import { BaseDao } from "./common.ts";
 
 export class FinancialAccountDao extends BaseDao<FinancialAccount> {
   override Table: string = "financial_account";
