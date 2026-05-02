@@ -8,7 +8,7 @@ export const removeAccountCommand = cli
   .action(() => {
     const service = new FinancialAccountService();
 
-    const accounts = service.listFinancialAccounts();
+    const accounts = service.getAllFinancialAccounts();
     if (accounts.length === 0) {
       console.warn("No existing account to edit");
       Deno.exit(1);
@@ -32,7 +32,7 @@ export const removeAccountCommand = cli
       Deno.exit(1);
     }
 
-    service.deleteFinancialAccountByIds([accounts[index].id]);
+    service.deleteFinancialAccountsByIds([accounts[index].id]);
     console.log("Ok");
   })
   .build();

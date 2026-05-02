@@ -1,32 +1,24 @@
 import { FinancialAccountDao } from "@anfi/dao";
-import * as db from "@anfi/db";
 import * as model from "@anfi/model";
+import { BusinessService } from "./common.ts";
 import * as schema from "./financial-account.schema.ts";
-import { DbService } from "./common.ts";
 
-export class FinancialAccountService implements DbService {
-  private _financialAccountDao = new FinancialAccountDao(
-    this.getDbConnection(),
-  );
+export class FinancialAccountService extends BusinessService {
+  upsertFinancialAccount(input: schema.UpsertFinancialAccountInput) {
+    const financialAccountDao = new FinancialAccountDao(
+      this.getDbConnection(),
+    );
 
-  getDbConnection() {
-    return new db.ConnectionBuilder().get();
-  }
-
-  upsertFinancialAccount(input: Record<string, unknown>) {
     const dto = schema.UpsertFinancialAccount.parse(input);
-
-    const existingAccount = dto.id
-      ? this._financialAccountDao.getById(dto.id)
-      : null;
+    const existingAccount = dto.id ? financialAccountDao.getById(dto.id) : null;
 
     if (existingAccount) {
       existingAccount.name = dto.name;
       existingAccount.type = dto.type;
-      return this._financialAccountDao.save(existingAccount);
+      return financialAccountDao.save(existingAccount);
     }
 
-    return this._financialAccountDao.save(
+    return financialAccountDao.save(
       new model.FinancialAccount({
         type: dto.type,
         name: dto.name,
@@ -34,13 +26,13 @@ export class FinancialAccountService implements DbService {
     );
   }
 
-  listFinancialAccounts(): schema.FinancialAccount[] {
-    return this._financialAccountDao.getAll().map((rec) =>
-      schema.FinancialAccount.parse(rec)
-    );
+  getAllFinancialAccounts(): schema.FinancialAccount[] {
+    return new FinancialAccountDao(this.getDbConnection())
+      .getAll()
+      .map((rec) => schema.FinancialAccount.parse(rec));
   }
 
-  deleteFinancialAccountByIds(ids: string[]) {
-    return this._financialAccountDao.deleteByIds(ids);
+  deleteFinancialAccountsByIds(ids: string[]) {
+    return new FinancialAccountDao(this.getDbConnection()).deleteByIds(ids);
   }
 }

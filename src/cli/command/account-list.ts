@@ -6,7 +6,7 @@ export const listAccountCommand = cli
   .builder()
   .name("list")
   .action(() => {
-    const accounts = new FinancialAccountService().listFinancialAccounts();
+    const accounts = new FinancialAccountService().getAllFinancialAccounts();
     console.log(
       new Table(
         ...accounts.map(({ id, type, name }, index) => [

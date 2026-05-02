@@ -8,7 +8,7 @@ export const editAccountCommand = cli
   .action(({ args: opts }) => {
     const service = new FinancialAccountService();
 
-    const accounts = service.listFinancialAccounts();
+    const accounts = service.getAllFinancialAccounts();
     if (accounts.length === 0) {
       console.warn("No existing account to edit");
       Deno.exit(1);

@@ -1,5 +1,11 @@
-import { DbConnection } from "@anfi/db";
+import * as db from "@anfi/db";
 
 export interface DbService {
-  getDbConnection(): DbConnection;
+  getDbConnection(): db.DbConnection;
+}
+
+export class BusinessService implements DbService {
+  getDbConnection(): db.DbConnection {
+    return db.connect();
+  }
 }

@@ -6,12 +6,13 @@ export const newAccountCommand = cli
   .name("new")
   .option("name")
   .option("type")
-  .action(({ args, done }) => {
+  .action((exec) => {
+    const { args } = exec;
     new FinancialAccountService().upsertFinancialAccount({
       id: null,
       name: args.name,
       type: args.type,
     });
-    done();
+    exec.done();
   })
   .build();

@@ -1,8 +1,7 @@
 import { FinancialAccountDao } from "@anfi/dao";
 import * as db from "@anfi/db";
 import * as model from "@anfi/model";
-import { assertArrayIncludes, assertEquals } from "@std/assert";
-import { assertExists } from "@std/assert/exists";
+import { assertArrayIncludes, assertEquals, assertExists } from "@std/assert";
 import { beforeEach, describe, it } from "@std/testing/bdd";
 import {
   assertSpyCall,
@@ -26,7 +25,7 @@ type Stubs = {
   };
 };
 
-describe("financial-account", () => {
+describe("FinancialAccountService", () => {
   const stubs: Stubs = {
     connectionBuilder: {},
     financialAccountDao: {},
@@ -55,11 +54,12 @@ describe("financial-account", () => {
           },
           crypto.randomUUID(),
         );
-        const updatedAccountData = {
+
+        const updatedAccountData = schema.UpsertFinancialAccount.parse({
           id: existingAccount.id,
           name: "Investment",
           type: "Liability",
-        };
+        });
 
         stubs.financialAccountDao.getById?.restore();
         stubs.financialAccountDao.getById = stub(
@@ -104,11 +104,11 @@ describe("financial-account", () => {
     describe("when no existing account exists", () => {
       it("should create a new account", () => {
         // Arrange
-        const accountData = {
+        const accountData = schema.UpsertFinancialAccount.parse({
           id: crypto.randomUUID(),
           name: "Investment",
           type: "Liability",
-        };
+        });
 
         stubs.financialAccountDao.getById?.restore();
         stubs.financialAccountDao.getById = stub(
@@ -153,11 +153,11 @@ describe("financial-account", () => {
     describe("when no id was provided", () => {
       it("should create a new account", () => {
         // Arrange
-        const accountData = {
+        const accountData = schema.UpsertFinancialAccount.parse({
           id: null,
           name: "Investment",
           type: "Liability",
-        };
+        });
 
         stubs.financialAccountDao.getById?.restore();
         stubs.financialAccountDao.getById = stub(
@@ -187,7 +187,7 @@ describe("financial-account", () => {
     });
   });
 
-  describe("listFinancialAccounts()", () => {
+  describe("getAllFinancialAccounts()", () => {
     it("should call FinancialAccountDao.getAll()", () => {
       stubs.financialAccountDao.getAll?.restore();
       stubs.financialAccountDao.getAll = stub(
@@ -197,7 +197,7 @@ describe("financial-account", () => {
       );
 
       const expected: schema.FinancialAccount[] = [];
-      const actual = financialAccountService.listFinancialAccounts();
+      const actual = financialAccountService.getAllFinancialAccounts();
 
       assertExists(stubs.financialAccountDao.getAll);
       assertSpyCalls(stubs.financialAccountDao.getAll, 1);
@@ -222,7 +222,7 @@ describe("financial-account", () => {
       const schemaParseSpy = spy(schema.FinancialAccount, "parse");
 
       // Act
-      const actual = financialAccountService.listFinancialAccounts();
+      const actual = financialAccountService.getAllFinancialAccounts();
 
       // Assert
       assertExists(stubs.financialAccountDao.getAll);
@@ -235,7 +235,7 @@ describe("financial-account", () => {
     });
   });
 
-  describe("deleteFinancialAccountByIds(ids)", () => {
+  describe("deleteFinancialAccountsByIds(ids)", () => {
     it("should invoke DAO", () => {
       stubs.financialAccountDao.deleteByIds?.restore();
       stubs.financialAccountDao.deleteByIds = stub(
@@ -244,7 +244,7 @@ describe("financial-account", () => {
         (_ids) => 0,
       );
 
-      financialAccountService.deleteFinancialAccountByIds([]);
+      financialAccountService.deleteFinancialAccountsByIds([]);
 
       assertExists(stubs.financialAccountDao.deleteByIds);
       assertSpyCalls(stubs.financialAccountDao.deleteByIds, 1);
