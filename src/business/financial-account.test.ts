@@ -50,7 +50,7 @@ describe("FinancialAccountService", () => {
         const existingAccount = new model.FinancialAccount(
           {
             name: "Checking",
-            type: model.FinancialAccountType.Asset,
+            type: "Asset",
           },
           crypto.randomUUID(),
         );
@@ -91,7 +91,7 @@ describe("FinancialAccountService", () => {
             new model.FinancialAccount(
               {
                 name: updatedAccountData.name,
-                type: model.FinancialAccountType.Liability,
+                type: "Liability",
               },
               updatedAccountData.id!,
             ),
@@ -140,7 +140,7 @@ describe("FinancialAccountService", () => {
             new model.FinancialAccount(
               {
                 name: accountData.name,
-                type: model.FinancialAccountType.Liability,
+                type: "Liability",
               },
               accountData.id,
             ),
@@ -182,7 +182,7 @@ describe("FinancialAccountService", () => {
         const actualSaveArg: model.FinancialAccount =
           stubs.financialAccountDao.save.calls[0].args[0];
         assertEquals(actualSaveArg.name, accountData.name);
-        assertEquals(actualSaveArg.type, model.FinancialAccountType.Liability);
+        assertEquals(actualSaveArg.type, "Liability");
       });
     });
   });
@@ -209,7 +209,7 @@ describe("FinancialAccountService", () => {
       const records = [
         new model.FinancialAccount({
           name: "Checking",
-          type: model.FinancialAccountType.Asset,
+          type: "Asset",
         }, crypto.randomUUID()),
       ];
 

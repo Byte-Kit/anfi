@@ -4,13 +4,12 @@ export interface FinancialAccountData {
   type: FinancialAccountType;
   name: string;
 }
-export enum FinancialAccountType {
-  Asset = 1,
-  Liability,
-  Equity,
-  Revenue,
-  Expense,
-}
+export type FinancialAccountType =
+  | "Asset"
+  | "Liability"
+  | "Equity"
+  | "Revenue"
+  | "Expense";
 
 export class FinancialAccount extends BaseEntity
   implements FinancialAccountData {

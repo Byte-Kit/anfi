@@ -1,74 +1,13 @@
 import * as z from "zod";
 
-const FinancialAccountTypeCodeParser = z.union([z.string(), z.number()])
-  .transform((value) => {
-    if (Number.isSafeInteger(value)) {
-      return value;
-    }
-    switch (String(value).toLowerCase()) {
-      case "asset":
-        return 1;
-      case "liability":
-        return 2;
-      case "equity":
-        return 3;
-      case "revenue":
-        return 4;
-      case "expense":
-        return 5;
-      default:
-        return -1;
-    }
-  })
-  .transform((value) => z.number().parse(value));
-export const FinancialAccountTypeCode = FinancialAccountTypeCodeParser
-  .transform((value) => {
-    return z
-      .enum({
-        Asset: 1,
-        Liability: 2,
-        Equity: 3,
-        Revenue: 4,
-        Expense: 5,
-      })
-      .parse(value);
-  });
-export type FinancialAccountTypeCode = z.infer<typeof FinancialAccountTypeCode>;
-
-const FinancialAccountTypeParser = z.union([z.string(), z.number()])
-  .transform((value) => {
-    if (Number.isSafeInteger(value)) {
-      switch (value) {
-        case 1:
-          return "Asset";
-        case 2:
-          return "Liability";
-        case 3:
-          return "Equity";
-        case 4:
-          return "Revenue";
-        case 5:
-          return "Expense";
-        default:
-          return "";
-      }
-    }
-
-    return String(value)
-      .split("")
-      .map((char, index) => index === 0 ? char.toUpperCase() : char);
-  })
-  .transform((value) => z.string().parse(value));
-export const FinancialAccountType = FinancialAccountTypeParser.transform(
-  (value) => {
-    return z.enum([
-      "Asset",
-      "Liability",
-      "Equity",
-      "Revenue",
-      "Expense",
-    ]).parse(value);
-  },
+export const FinancialAccountType = z.string().transform((value) =>
+  z.enum([
+    "Asset",
+    "Liability",
+    "Equity",
+    "Revenue",
+    "Expense",
+  ]).parse(value)
 );
 export type FinancialAccountType = z.infer<typeof FinancialAccountType>;
 
@@ -115,9 +54,9 @@ export const UpsertFinancialAccount = z.object({
    *
    * Can either be a string or an integer.
    *
-   * @see {@link FinancialAccountType} and {@link FinancialAccountTypeCode}.
+   * @see {@link FinancialAccountType}
    */
-  type: FinancialAccountTypeCode,
+  type: FinancialAccountType,
 });
 export type UpsertFinancialAccount = z.infer<typeof UpsertFinancialAccount>;
 export type UpsertFinancialAccountInput = z.input<

@@ -18,11 +18,11 @@ describe("FinancialAccountDao", () => {
       it("should insert a new record", () => {
         const insertedRecordCount = dao.save(
           new FinancialAccount({
-            type: FinancialAccountType.Asset,
+            type: "Asset",
             name: "Checking",
           }),
           new FinancialAccount({
-            type: FinancialAccountType.Asset,
+            type: "Asset",
             name: "Investment",
           }),
         );
@@ -33,7 +33,7 @@ describe("FinancialAccountDao", () => {
     describe("when saving an existing record", () => {
       it("should update the record", () => {
         const originalRecord = new FinancialAccount({
-          type: FinancialAccountType.Asset,
+          type: "Asset",
           name: "Checking Account 1",
         });
         dao.save(originalRecord);
@@ -58,7 +58,7 @@ describe("FinancialAccountDao", () => {
     describe("when a record with the specified ID exists", () => {
       it("should return the found record", () => {
         const record = new FinancialAccount({
-          type: FinancialAccountType.Asset,
+          type: "Asset",
           name: "Checking Account",
         });
         dao.save(record);
@@ -81,11 +81,11 @@ describe("FinancialAccountDao", () => {
     it("should return all records", () => {
       const records: FinancialAccount[] = [
         new FinancialAccount({
-          type: FinancialAccountType.Asset,
+          type: "Asset",
           name: "Checking Account",
         }),
         new FinancialAccount({
-          type: FinancialAccountType.Expense,
+          type: "Expense",
           name: "Grocery",
         }),
       ];
@@ -100,11 +100,11 @@ describe("FinancialAccountDao", () => {
       it("should make no change", () => {
         const records: FinancialAccount[] = [
           new FinancialAccount({
-            type: FinancialAccountType.Asset,
+            type: "Asset",
             name: "Checking Account",
           }),
           new FinancialAccount({
-            type: FinancialAccountType.Expense,
+            type: "Expense",
             name: "Grocery",
           }),
         ];
@@ -119,11 +119,11 @@ describe("FinancialAccountDao", () => {
       it("should delete records with specified IDs", () => {
         const records: FinancialAccount[] = [
           new FinancialAccount({
-            type: FinancialAccountType.Asset,
+            type: "Asset",
             name: "Checking Account",
           }),
           new FinancialAccount({
-            type: FinancialAccountType.Expense,
+            type: "Expense",
             name: "Grocery",
           }),
         ];

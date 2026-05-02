@@ -1,5 +1,5 @@
 import { DbRecord } from "@anfi/db";
-import { FinancialAccount } from "@anfi/model";
+import { FinancialAccount, FinancialAccountType } from "@anfi/model";
 import { BaseDao } from "./common.ts";
 
 export class FinancialAccountDao extends BaseDao<FinancialAccount> {
@@ -8,7 +8,7 @@ export class FinancialAccountDao extends BaseDao<FinancialAccount> {
   protected override entityFromRecord(record: DbRecord): FinancialAccount {
     return new FinancialAccount(
       {
-        type: Number(record.type),
+        type: String(record.type) as FinancialAccountType,
         name: String(record.name),
       },
       String(record.id),

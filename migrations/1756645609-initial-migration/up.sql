@@ -6,9 +6,9 @@ CREATE TABLE IF NOT EXISTS "_migration" (
 );
 
 CREATE TABLE IF NOT EXISTS "financial_account" (
-  "id"   TEXT     NOT NULL,
-  "type" INTEGER  NOT NULL,
-  "name" TEXT     NOT NULL,
+  "id"   TEXT NOT NULL,
+  "type" TEXT NOT NULL CHECK ("type" IN ('Asset', 'Liability', 'Equity', 'Revenue', 'Expense')),
+  "name" TEXT NOT NULL,
 
   PRIMARY KEY("id")
 );
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS "transaction" (
   "financial_account_id"  TEXT      NOT NULL,
   "financial_event_id"    TEXT      NOT NULL,
   "amount"                REAL      NOT NULL,
-  "type"                  TEXT      NOT NULL,
+  "type"                  TEXT      NOT NULL CHECK ("type" IN ('Credit', 'Debit')),
 
   PRIMARY KEY("id"),
   FOREIGN KEY("financial_account_id") REFERENCES "financial_account"("id"),
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS "budget" (
   "financial_account_id" TEXT      NOT NULL,
   "period_start"         INTEGER   NOT NULL,
   "period_end"           INTEGER   NOT NULL,
-  "type"                 TEXT      NOT NULL,
+  "type"                 TEXT      NOT NULL CHECK ("type" IN ('Credit', 'Debit')),
   "amount"               REAL      NOT NULL,
 
   PRIMARY KEY("id"),
