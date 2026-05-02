@@ -1,5 +1,5 @@
 import * as db from "@anfi/db";
-import { FinancialAccount, FinancialAccountType } from "@anfi/model";
+import { FinancialAccount } from "@anfi/model";
 import { assertArrayIncludes, assertEquals, assertExists } from "@std/assert";
 import { beforeEach, describe, it } from "@std/testing/bdd";
 import { FinancialAccountDao } from "./financial-account.ts";

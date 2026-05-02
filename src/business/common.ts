@@ -6,6 +6,6 @@ export interface DbService {
 
 export class BusinessService implements DbService {
   getDbConnection(): db.DbConnection {
-    return db.connect();
+    return new db.ConnectionBuilder().get();
   }
 }
