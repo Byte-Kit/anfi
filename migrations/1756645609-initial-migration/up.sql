@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS "transaction" (
   "type"                  TEXT      NOT NULL,
 
   PRIMARY KEY("id"),
-  FOREIGN KEY("financial_account_id") REFERENCES "financial_account"("id")
+  FOREIGN KEY("financial_account_id") REFERENCES "financial_account"("id"),
   FOREIGN KEY("financial_event_id") REFERENCES "financial_event"("id")
 );
 
@@ -41,8 +41,8 @@ CREATE TABLE IF NOT EXISTS "budget" (
   "type"                 TEXT      NOT NULL,
   "amount"               REAL      NOT NULL,
 
-  PRIMARY KEY("id")
-  FOREIGN KEY("financial_account_id") REFERENCES "financial_account"("id")
+  PRIMARY KEY("id"),
+  FOREIGN KEY("financial_account_id") REFERENCES "financial_account"("id"),
   UNIQUE("period_start", "period_end","financial_account_id")
 );
 
