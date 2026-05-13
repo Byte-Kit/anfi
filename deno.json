@@ -59,7 +59,9 @@
         "test"
       ]
     },
-    "migrate": "deno run -P --env-file=.env src/db/cli.ts",
+    "db:clean": "deno run -P --env-file=.env src/db/scripts/clean.ts",
+    "db:migrate": "deno run -P --env-file=.env src/db/scripts/migrate.ts",
+    "db:reset": "deno run -P --env-file=.env src/db/scripts/reset.ts",
     "coverage": "deno coverage --exclude=\"model\" --exclude=\"db\"",
     "dev:cli": "deno run -P --env-file=.env src/cli/index.ts",
     "dev:tui": "deno run -P --env-file=.env src/tui/index.tsx",

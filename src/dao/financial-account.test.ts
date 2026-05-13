@@ -8,9 +8,9 @@ describe("FinancialAccountDao", () => {
   let dao!: FinancialAccountDao;
 
   beforeEach(async () => {
-    await db.removeAsync();
+    await db.cleanUpAsync();
     await db.migrateAsync();
-    dao = new FinancialAccountDao(db.connect());
+    dao = new FinancialAccountDao(new db.ConnectionBuilder().get());
   });
 
   describe("save(...entities)", () => {
@@ -44,7 +44,7 @@ describe("FinancialAccountDao", () => {
         }, originalRecord.id);
         dao.save(updatedRecord);
 
-        const actual = db.connect()
+        const actual = new db.ConnectionBuilder().get()
           .prepare(`SELECT * FROM ${dao.Table} WHERE id = ?`)
           .get(updatedRecord.id);
 

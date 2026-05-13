@@ -20,17 +20,17 @@ describe("connection", () => {
       });
 
       it("should initialize an in-memory database", () => {
-        assertExists(dbConnection.connect());
+        assertExists(new dbConnection.ConnectionBuilder().get());
       });
     });
 
     describe(`when ${Config.Key.DbPath} is set`, () => {
       afterEach(async () => {
-        await dbUtil.removeAsync();
+        await dbUtil.cleanUpAsync();
       });
 
       it("should initialize a database at the location defined by DB_PATH", async () => {
-        assertExists(dbConnection.connect());
+        assertExists(new dbConnection.ConnectionBuilder().get());
         const actualPathToDbFile = await Deno.stat(
           Config.get(Config.Key.DbPath) as string,
         );
@@ -58,7 +58,7 @@ describe("connection", () => {
 
       describe(`when ${Config.Key.DbPath} is set`, () => {
         afterEach(async () => {
-          await dbUtil.removeAsync();
+          await dbUtil.cleanUpAsync();
         });
 
         it("should initialize a database at the location defined by DB_PATH", async () => {
