@@ -1,12 +1,12 @@
 import { FinancialAccountDao } from "@anfi/dao";
 import * as model from "@anfi/model";
-import { BusinessService } from "./common.ts";
 import * as schema from "./financial-account.schema.ts";
+import * as db from "@anfi/db";
 
-export class FinancialAccountService extends BusinessService {
+export class FinancialAccountService {
   upsertFinancialAccount(input: schema.UpsertFinancialAccountInput) {
     const financialAccountDao = new FinancialAccountDao(
-      this.getDbConnection(),
+      new db.ConnectionBuilder().get(),
     );
 
     const dto = schema.UpsertFinancialAccount.parse(input);
@@ -27,12 +27,13 @@ export class FinancialAccountService extends BusinessService {
   }
 
   getAllFinancialAccounts(): schema.FinancialAccount[] {
-    return new FinancialAccountDao(this.getDbConnection())
+    return new FinancialAccountDao(new db.ConnectionBuilder().get())
       .getAll()
       .map((rec) => schema.FinancialAccount.parse(rec));
   }
 
   deleteFinancialAccountsByIds(ids: string[]) {
-    return new FinancialAccountDao(this.getDbConnection()).deleteByIds(ids);
+    return new FinancialAccountDao(new db.ConnectionBuilder().get())
+      .deleteByIds(ids);
   }
 }
