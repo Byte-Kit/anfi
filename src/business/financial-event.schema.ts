@@ -22,7 +22,7 @@ export const CreateFinancialEvent = z.object({
    * The list of Transaction(s) associated with the Financial Event.
    */
   transactions: z.object({
-    amount: z.number(),
+    amount: z.number().nonnegative(),
     type: z.string().transform((value) =>
       z.enum(["Credit", "Debit"]).parse(value)
     ),
