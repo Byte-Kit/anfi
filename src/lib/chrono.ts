@@ -200,7 +200,7 @@ export class Chrono implements IEqual<Chrono> {
     const timeZoneStr = timeZone.toString(ChronoSpanFormat.TimeZone);
 
     if (format == ChronoFormat.Iso8061) {
-      return `${yearStr}-${monthStr}-${dayStr}T${hoursStr}:${minutesStr}:${secondsStr}.${milliSecondsStr}${timeZoneStr}`;
+      return `${yearStr}-${monthStr}-${dayStr}T${hoursStr}:${minutesStr}:${secondsStr}${timeZoneStr}`;
     }
 
     return this.date.toString();
@@ -210,6 +210,7 @@ export class Chrono implements IEqual<Chrono> {
 export enum ChronoSpanFormat {
   Basic,
   TimeZone,
+  TimeZoneWithoutColon,
 }
 
 export class ChronoSpan {
@@ -277,6 +278,10 @@ export class ChronoSpan {
     const milliSecondsStr = milliseconds.toString().padStart(3, "0");
 
     if (format === ChronoSpanFormat.TimeZone) {
+      return `${this.isNegative ? "-" : "+"}${hoursStr}:${minutesStr}`;
+    }
+
+    if (format === ChronoSpanFormat.TimeZoneWithoutColon) {
       return `${this.isNegative ? "-" : "+"}${hoursStr}${minutesStr}`;
     }
 

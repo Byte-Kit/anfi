@@ -170,7 +170,7 @@ describe("Chrono", () => {
       const now = new Date(2025, 0, 1, 7, 30, 5, 500);
       assertEquals(
         new Chrono(now).toString(ChronoFormat.Iso8061),
-        "2025-01-01T07:30:05.500+0700",
+        "2025-01-01T07:30:05+07:00",
       );
     });
   });
@@ -233,7 +233,7 @@ describe("ChronoSpan", () => {
   });
 
   describe("toString()", () => {
-    it("should dislay timespan using the basic format", () => {
+    it("should display timespan using the basic format", () => {
       const cases: [ChronoSpan, string][] = [
         [ChronoSpan.fromDays(0), "0.00:00:00.000"],
         [ChronoSpan.fromDays(7), "7.00:00:00.000"],
@@ -255,20 +255,20 @@ describe("ChronoSpan", () => {
     });
 
     it("should dislay timespan using the TimeZone format", () => {
-      assertEquals(
-        ChronoSpan.fromHours(0).toString(ChronoSpanFormat.TimeZone),
-        "+0000",
-      );
+      const cases: [ChronoSpan, string][] = [
+        [ChronoSpan.fromHours(0), "+00:00"],
+        [ChronoSpan.fromHours(2.5), "+02:30"],
+        [ChronoSpan.fromMinutes(-420), "-07:00"],
+      ];
 
-      assertEquals(
-        ChronoSpan.fromHours(2.5).toString(ChronoSpanFormat.TimeZone),
-        "+0230",
-      );
-
-      assertEquals(
-        ChronoSpan.fromMinutes(-420).toString(ChronoSpanFormat.TimeZone),
-        "-0700",
-      );
+      cases.forEach((entry) => {
+        const [actual, expected] = entry;
+        assertEquals(actual.toString(ChronoSpanFormat.TimeZone), expected);
+        assertEquals(
+          actual.toString(ChronoSpanFormat.TimeZoneWithoutColon),
+          expected.replace(":", ""),
+        );
+      });
     });
   });
 
