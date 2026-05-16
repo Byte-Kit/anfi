@@ -1,4 +1,4 @@
-import { collect, Collection, Dict } from "@anfi/lib/index.ts";
+import { collect, Collection, Dict } from "@anfi/lib";
 
 export enum Key {
   ServerPort,
