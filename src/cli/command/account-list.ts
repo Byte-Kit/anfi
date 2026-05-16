@@ -5,7 +5,7 @@ import { cli } from "@anfi/lib";
 export const listAccountCommand = cli
   .builder()
   .name("list")
-  .action(() => {
+  .action((exec) => {
     const accounts = new FinancialAccountService().getAllFinancialAccounts();
     console.log(
       new Table(
@@ -17,5 +17,6 @@ export const listAccountCommand = cli
         ]),
       ).header(["", "id", "type", "name"]).border().toString(),
     );
+    exec.done();
   })
   .build();
