@@ -1,14 +1,23 @@
 import * as schema from "@anfi/business/financial-event.schema.ts";
 import { FinancialEventService } from "@anfi/business/financial-event.ts";
-import { FinancialEventDao, TransactionDao } from "@anfi/dao";
+import {
+  FinancialAccountDao,
+  FinancialEventDao,
+  TransactionDao,
+} from "@anfi/dao";
 import * as db from "@anfi/db";
 import { Chrono } from "@anfi/lib";
 import * as model from "@anfi/model";
-import { assertArrayIncludes, assertThrows } from "@std/assert";
+import { assertArrayIncludes, assertEquals, assertThrows } from "@std/assert";
 import { assertExists } from "@std/assert/exists";
 import { assertObjectMatch } from "@std/assert/object-match";
 import { beforeAll, beforeEach, describe, it } from "@std/testing/bdd";
-import { assertSpyCalls, SpyLike, stub } from "@std/testing/mock";
+import {
+  assertSpyCall,
+  assertSpyCalls,
+  SpyLike,
+  stub,
+} from "@std/testing/mock";
 
 type Stubs = {
   connectionBuilder: {
@@ -16,9 +25,14 @@ type Stubs = {
   };
   financialEventDao: {
     save?: SpyLike;
+    getAll?: SpyLike;
   };
   transactionDao: {
     save?: SpyLike;
+    getByFinancialEventId?: SpyLike;
+  };
+  financialAccountDao: {
+    getById?: SpyLike;
   };
 };
 
@@ -28,6 +42,7 @@ describe("FinancialEventService", () => {
     connectionBuilder: {},
     financialEventDao: {},
     transactionDao: {},
+    financialAccountDao: {},
   };
 
   beforeAll(() => {
@@ -147,6 +162,116 @@ describe("FinancialEventService", () => {
           })),
         );
       });
+    });
+  });
+
+  describe("list()", () => {
+    const eventIdentifier = crypto.randomUUID();
+    const creditAccountIdentifier = crypto.randomUUID();
+    const debitAccountIdentifier = crypto.randomUUID();
+
+    const financialEvent = new model.FinancialEvent({
+      timestamp: 1000000,
+      description: "Test transaction",
+    }, eventIdentifier);
+
+    const creditTransaction = new model.Transaction({
+      amount: 500,
+      type: "Credit",
+      financialAccountId: creditAccountIdentifier,
+      financialEventId: eventIdentifier,
+    });
+
+    const debitTransaction = new model.Transaction({
+      amount: 500,
+      type: "Debit",
+      financialAccountId: debitAccountIdentifier,
+      financialEventId: eventIdentifier,
+    });
+
+    const sourceAccount = new model.FinancialAccount({
+      name: "Checking",
+      type: "Asset",
+    }, creditAccountIdentifier);
+
+    const targetAccount = new model.FinancialAccount({
+      name: "Savings",
+      type: "Asset",
+    }, debitAccountIdentifier);
+
+    beforeEach(() => {
+      stubs.financialEventDao.getAll?.restore();
+      stubs.financialEventDao.getAll = stub(
+        FinancialEventDao.prototype,
+        "getAll",
+        () => [financialEvent],
+      );
+
+      stubs.transactionDao.getByFinancialEventId?.restore();
+      stubs.transactionDao.getByFinancialEventId = stub(
+        TransactionDao.prototype,
+        "getByFinancialEventId",
+        (_eventIdentifier: string) => [creditTransaction, debitTransaction],
+      );
+
+      stubs.financialAccountDao.getById?.restore();
+      stubs.financialAccountDao.getById = stub(
+        FinancialAccountDao.prototype,
+        "getById",
+        (identifier: string) => {
+          if (identifier === creditAccountIdentifier) return sourceAccount;
+          if (identifier === debitAccountIdentifier) return targetAccount;
+          return null;
+        },
+      );
+    });
+
+    it("should call FinancialEventDao.getAll", () => {
+      const actual = service.list();
+
+      assertExists(stubs.financialEventDao.getAll);
+      assertSpyCalls(stubs.financialEventDao.getAll, 1);
+
+      assertExists(actual);
+    });
+
+    it("should call TransactionDao.getByFinancialEventId for each event", () => {
+      service.list();
+
+      assertExists(stubs.transactionDao.getByFinancialEventId);
+      assertSpyCalls(stubs.transactionDao.getByFinancialEventId, 1);
+      assertSpyCall(stubs.transactionDao.getByFinancialEventId, 0, {
+        args: [eventIdentifier],
+      });
+    });
+
+    it("should call FinancialAccountDao.getById for each transaction account", () => {
+      service.list();
+
+      assertExists(stubs.financialAccountDao.getById);
+      assertSpyCalls(stubs.financialAccountDao.getById, 2);
+      const firstCallIdentifier =
+        stubs.financialAccountDao.getById.calls[0].args[0];
+      const secondCallIdentifier =
+        stubs.financialAccountDao.getById.calls[1].args[0];
+      assertEquals(firstCallIdentifier, creditAccountIdentifier);
+      assertEquals(secondCallIdentifier, debitAccountIdentifier);
+    });
+
+    it("should return the correct financial event list items", () => {
+      const actual = service.list();
+
+      assertEquals(actual.length, 1);
+      assertObjectMatch(
+        actual[0],
+        {
+          timestamp: Chrono.fromUnix(financialEvent.timestamp).toString(),
+          sourceAccountName: sourceAccount.name,
+          targetAccountName: targetAccount.name,
+          amount: creditTransaction.amount,
+          description: financialEvent.description,
+        },
+      );
     });
   });
 });

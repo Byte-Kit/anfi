@@ -31,3 +31,11 @@ export const CreateFinancialEvent = z.object({
 });
 export type CreateFinancialEvent = z.infer<typeof CreateFinancialEvent>;
 export type CreateFinancialEventInput = z.input<typeof CreateFinancialEvent>;
+
+export interface FinancialEventListItem {
+  timestamp: string;
+  sourceAccountName: string;
+  targetAccountName: string;
+  amount: number;
+  description: string;
+}
