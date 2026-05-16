@@ -153,6 +153,10 @@ describe("Chrono", () => {
       cases.forEach((entry) => {
         const [actual, expected] = entry;
         assertEquals(actual.toString(), expected.toString());
+        assertEquals(
+          actual.toString(ChronoFormat.Iso8061WithMilliseconds),
+          expected.toString(ChronoFormat.Iso8061WithMilliseconds),
+        );
       });
     });
   });

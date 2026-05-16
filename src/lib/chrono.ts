@@ -12,6 +12,7 @@ export type ChronoUnit =
 export enum ChronoFormat {
   Basic,
   Iso8061,
+  Iso8061WithMilliseconds,
 }
 
 export class Chrono implements IEqual<Chrono> {
@@ -201,6 +202,9 @@ export class Chrono implements IEqual<Chrono> {
 
     if (format == ChronoFormat.Iso8061) {
       return `${yearStr}-${monthStr}-${dayStr}T${hoursStr}:${minutesStr}:${secondsStr}${timeZoneStr}`;
+    }
+    if (format === ChronoFormat.Iso8061WithMilliseconds) {
+      return `${yearStr}-${monthStr}-${dayStr}T${hoursStr}:${minutesStr}:${secondsStr}.${milliSecondsStr}${timeZoneStr}`;
     }
 
     return this.date.toString();
