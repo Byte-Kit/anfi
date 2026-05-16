@@ -48,7 +48,7 @@
   },
   "tasks": {
     "ci:lint": "deno lint",
-    "ci:fmt": "deno fmt --check",
+    "ci:fmt": "deno fmt --check src/",
     "ci:check": "deno check",
     "ci": {
       "command": "deno task coverage",
