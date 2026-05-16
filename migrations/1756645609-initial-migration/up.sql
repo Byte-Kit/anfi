@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS "financial_event" (
   PRIMARY KEY("id")
 );
 
-CREATE TABLE IF NOT EXISTS "transaction" (
+CREATE TABLE IF NOT EXISTS "financial_transaction" (
   "id"                    TEXT      NOT NULL,
   "financial_account_id"  TEXT      NOT NULL,
   "financial_event_id"    TEXT      NOT NULL,

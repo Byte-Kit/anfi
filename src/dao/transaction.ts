@@ -3,7 +3,7 @@ import { Transaction } from "@anfi/model";
 import { BaseDao } from "./common.ts";
 
 export class TransactionDao extends BaseDao<Transaction> {
-  override Table: string = "transaction";
+  override Table: string = "financial_transaction";
 
   protected override entityFromRecord(record: DbRecord): Transaction {
     return new Transaction(
