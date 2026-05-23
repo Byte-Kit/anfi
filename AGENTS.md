@@ -14,6 +14,15 @@ Deno 2.x project (no `node_modules`).
 - `src/lib/`: Shared utilities and libraries.
 - `src/config.ts`: Defines solution parameters and config sources.
 
+## Scripts & Commands
+
+Deno development scripts:
+
+- `dev:cli`: Execute CLI.
+- `test`: Execute test and generate coverage report in `./coverage/`.
+- `test:watch`: Execute with hot-reloading support all tests that are modified.
+- `coverage`: Print coverate report to CLI.
+
 ## Programming Guidelines
 
 ### Naming Convention
