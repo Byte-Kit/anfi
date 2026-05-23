@@ -6,13 +6,25 @@ import { BaseDao } from "./common.ts";
 export class TransactionDao extends BaseDao<Transaction> {
   override Table: string = "financial_transaction";
 
-  getByFinancialEventId(eventId: string): Transaction[] {
+  getByFinancialEventIds(eventIds: string[]): Transaction[] {
+    if (eventIds.length === 0) {
+      return [];
+    }
+
     const sql = new StringBuilder()
       .a("SELECT *").n()
       .a(`FROM [${this.Table}]`).n()
-      .a("WHERE financial_event_id = ?")
+      .a("WHERE financial_event_id IN (")
+      .lines(
+        eventIds.map((_) =>
+          new StringBuilder()
+            .a("?").get()
+        ),
+        ",",
+      )
+      .a(")")
       .get();
-    const records = this.conn.prepare(sql).all(eventId);
+    const records = this.conn.prepare(sql).all(...eventIds);
     return records.map((record) => this.entityFromRecord(record));
   }
 
@@ -21,8 +33,8 @@ export class TransactionDao extends BaseDao<Transaction> {
       {
         amount: Number(record.amount),
         type: String(record.type) === "Credit" ? "Credit" : "Debit",
-        financialAccountId: String(record.financialAccountId),
-        financialEventId: String(record.financialEventId),
+        financialAccountId: String(record.financial_account_id),
+        financialEventId: String(record.financial_event_id),
       },
       String(record.id),
     );

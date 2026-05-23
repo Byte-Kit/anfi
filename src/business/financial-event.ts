@@ -12,21 +12,39 @@ export class FinancialEventService {
     const transactionDao = new TransactionDao(conn);
     const accountDao = new FinancialAccountDao(conn);
 
-    return eventDao.getAll().map((event) => {
-      const transactions = transactionDao.getByFinancialEventId(event.id);
+    const events = eventDao.getAll();
+    const eventIdToTransactions = Map.groupBy(
+      transactionDao.getByFinancialEventIds(events.map((e) => e.id)),
+      (t) => t.financialEventId,
+    );
+
+    return events.map((event) => {
+      const transactions = eventIdToTransactions.get(event.id) ?? [];
+      if (!transactions) {
+        throw "Unexpected error";
+      }
+
       const creditTransaction = transactions.find((t) => t.type === "Credit")!;
       const debitTransaction = transactions.find((t) => t.type === "Debit")!;
-      const sourceAccount = accountDao.getById(
+
+      const creditAccount = accountDao.getById(
         creditTransaction.financialAccountId,
-      )!;
-      const targetAccount = accountDao.getById(
+      );
+      if (!creditAccount) {
+        throw "Unexpected error";
+      }
+
+      const debitAccount = accountDao.getById(
         debitTransaction.financialAccountId,
-      )!;
+      );
+      if (!debitAccount) {
+        throw "Unexpected error";
+      }
 
       return {
         timestamp: Chrono.fromUnix(event.timestamp).toString(),
-        sourceAccountName: sourceAccount.name,
-        targetAccountName: targetAccount.name,
+        sourceAccountName: creditAccount.name,
+        targetAccountName: debitAccount.name,
         amount: creditTransaction.amount,
         description: event.description,
       };

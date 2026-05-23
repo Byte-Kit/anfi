@@ -29,7 +29,7 @@ type Stubs = {
   };
   transactionDao: {
     save?: SpyLike;
-    getByFinancialEventId?: SpyLike;
+    getByFinancialEventIds?: SpyLike;
   };
   financialAccountDao: {
     getById?: SpyLike;
@@ -207,11 +207,11 @@ describe("FinancialEventService", () => {
         () => [financialEvent],
       );
 
-      stubs.transactionDao.getByFinancialEventId?.restore();
-      stubs.transactionDao.getByFinancialEventId = stub(
+      stubs.transactionDao.getByFinancialEventIds?.restore();
+      stubs.transactionDao.getByFinancialEventIds = stub(
         TransactionDao.prototype,
-        "getByFinancialEventId",
-        (_eventIdentifier: string) => [creditTransaction, debitTransaction],
+        "getByFinancialEventIds",
+        (_eventIds: string[]) => [creditTransaction, debitTransaction],
       );
 
       stubs.financialAccountDao.getById?.restore();
@@ -235,13 +235,13 @@ describe("FinancialEventService", () => {
       assertExists(actual);
     });
 
-    it("should call TransactionDao.getByFinancialEventId for each event", () => {
+    it("should call TransactionDao.getByFinancialEventIds with all event ids", () => {
       service.list();
 
-      assertExists(stubs.transactionDao.getByFinancialEventId);
-      assertSpyCalls(stubs.transactionDao.getByFinancialEventId, 1);
-      assertSpyCall(stubs.transactionDao.getByFinancialEventId, 0, {
-        args: [eventIdentifier],
+      assertExists(stubs.transactionDao.getByFinancialEventIds);
+      assertSpyCalls(stubs.transactionDao.getByFinancialEventIds, 1);
+      assertSpyCall(stubs.transactionDao.getByFinancialEventIds, 0, {
+        args: [[eventIdentifier]],
       });
     });
 
@@ -272,6 +272,37 @@ describe("FinancialEventService", () => {
           description: financialEvent.description,
         },
       );
+    });
+
+    describe("when source account is missing", () => {
+      beforeEach(() => {
+        stubs.financialAccountDao.getById?.restore();
+        stubs.financialAccountDao.getById = stub(
+          FinancialAccountDao.prototype,
+          "getById",
+          () => null,
+        );
+      });
+
+      it("should throw an error", () => {
+        assertThrows(() => service.list());
+      });
+    });
+
+    describe("when target account is missing", () => {
+      beforeEach(() => {
+        stubs.financialAccountDao.getById?.restore();
+        stubs.financialAccountDao.getById = stub(
+          FinancialAccountDao.prototype,
+          "getById",
+          (identifier: string) =>
+            identifier === creditAccountIdentifier ? sourceAccount : null,
+        );
+      });
+
+      it("should throw an error", () => {
+        assertThrows(() => service.list());
+      });
     });
   });
 });

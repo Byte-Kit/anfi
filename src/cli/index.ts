@@ -18,7 +18,7 @@ try {
         .get(),
     );
   } else if (err instanceof Error) {
-    console.error(err.message);
+    console.error(err.message, err.stack);
   } else {
     throw err;
   }
