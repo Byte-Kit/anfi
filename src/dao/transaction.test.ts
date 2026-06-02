@@ -67,7 +67,10 @@ describe("TransactionDao", () => {
       it("should update the record", () => {
         const account = createAccount();
         const event = createEvent();
-        const original = makeTransaction(account, event, { amount: 50, type: "Debit" });
+        const original = makeTransaction(account, event, {
+          amount: 50,
+          type: "Debit",
+        });
         dao.save(original);
 
         const updated = new Transaction({
