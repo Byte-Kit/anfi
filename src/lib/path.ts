@@ -1,4 +1,4 @@
-import { join, resolve } from "@std/path";
+import * as stdPath from "@std/path";
 
 export function resolvePath(path: string) {
   if (path.startsWith("~")) {
@@ -7,8 +7,10 @@ export function resolvePath(path: string) {
       throw new Error("Could not locate the home directory");
     }
 
-    return resolve(join(home, path.slice(1)));
+    return stdPath.resolve(stdPath.join(home, path.slice(1)));
   }
 
-  return resolve(path);
+  return stdPath.resolve(path);
 }
+
+export * from "@std/path";
