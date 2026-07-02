@@ -14,6 +14,8 @@ Deno 2.x project (no `node_modules`).
 - `src/lib/`: Shared utilities and libraries.
 - `src/config.ts`: Defines solution parameters and config sources.
 
+Additionally, refer to `.gitignore` for the list of ignored files and directories.
+
 ## Scripts & Commands
 
 Deno development scripts:
