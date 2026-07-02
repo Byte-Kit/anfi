@@ -67,3 +67,30 @@ export class StringBuilder {
 export function camelToSnakeCase(value: string): string {
   return value.replace(/([A-Z])/g, "_$1").toLowerCase();
 }
+
+export function trim(strings: TemplateStringsArray, ...values: unknown[]) {
+  const interpolatedStr = strings.reduce(
+    (acc, str, i) => acc + str + (values[i] ?? ""),
+    "",
+  );
+  if (!interpolatedStr.includes("\n")) {
+    return interpolatedStr;
+  }
+
+  const lines = interpolatedStr.split("\n");
+  const firstIndentedLine = lines.find((line) => line.startsWith(" "));
+  const indent = firstIndentedLine
+    ? firstIndentedLine.length - firstIndentedLine.trimStart().length
+    : 0;
+
+  const dedentedLines = lines.map((line) =>
+    line.slice(Math.min(line.length - line.trimStart().length, indent))
+  );
+  while (dedentedLines[0] === "") {
+    dedentedLines.shift();
+  }
+  while (dedentedLines[dedentedLines.length - 1] === "") {
+    dedentedLines.pop();
+  }
+  return dedentedLines.join("\n");
+}
