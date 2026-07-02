@@ -1,53 +1,55 @@
-import { FinancialAccountDao } from "@anfi/dao";
-import * as db from "@anfi/db";
-import * as model from "@anfi/model";
-import { assertArrayIncludes, assertEquals, assertExists } from "@std/assert";
+import { FinancialAccount } from "@anfi/model";
+import { FinancialAccountRepository } from "@anfi/model/repository";
+import { assertArrayIncludes, assertEquals } from "@std/assert";
 import { beforeEach, describe, it } from "@std/testing/bdd";
-import {
-  assertSpyCall,
-  assertSpyCalls,
-  spy,
-  SpyLike,
-  stub,
-} from "@std/testing/mock";
+import { assertSpyCall, assertSpyCalls, Spy, spy } from "@std/testing/mock";
 import * as schema from "./financial-account.schema.ts";
 import { FinancialAccountService } from "./financial-account.ts";
 
-type Stubs = {
-  connectionBuilder: {
-    get?: SpyLike;
-  };
-  financialAccountDao: {
-    getById?: SpyLike;
-    save?: SpyLike;
-    getAll?: SpyLike;
-    deleteByIds?: SpyLike;
-  };
-};
-
 describe("FinancialAccountService", () => {
-  const stubs: Stubs = {
-    connectionBuilder: {},
-    financialAccountDao: {},
-  };
-  let financialAccountService: FinancialAccountService;
+  let mockRepo: FinancialAccountRepository;
+  let getByIdAsyncSpy: Spy;
+  let saveAsyncSpy: Spy;
+  let getAllAsyncSpy: Spy;
+  let deleteByIdsAsyncSpy: Spy;
+  let service: FinancialAccountService;
 
-  beforeEach(() => {
-    stubs.connectionBuilder.get?.restore();
-    stubs.connectionBuilder.get = stub(
-      db.ConnectionBuilder.prototype,
-      "get",
-      () => ({} as db.DbConnection),
+  function createMockRepo() {
+    getByIdAsyncSpy = spy(
+      (_id: string): Promise<FinancialAccount | null> => Promise.resolve(null),
+    );
+    saveAsyncSpy = spy(
+      (..._entities: FinancialAccount[]): Promise<number> => Promise.resolve(1),
+    );
+    getAllAsyncSpy = spy(
+      (): Promise<FinancialAccount[]> => Promise.resolve([]),
+    );
+    const getByIdsAsyncSpy = spy(
+      (): Promise<FinancialAccount[]> => Promise.resolve([]),
+    );
+    deleteByIdsAsyncSpy = spy(
+      (_ids: string[]): Promise<number> => Promise.resolve(0),
     );
 
-    financialAccountService = new FinancialAccountService();
+    mockRepo = {
+      getByIdAsync: getByIdAsyncSpy,
+      saveAsync: saveAsyncSpy,
+      getAllAsync: getAllAsyncSpy,
+      getByIdsAsync: getByIdsAsyncSpy,
+      deleteByIdsAsync: deleteByIdsAsyncSpy,
+    } as FinancialAccountRepository;
+
+    service = new FinancialAccountService(mockRepo);
+  }
+
+  beforeEach(() => {
+    createMockRepo();
   });
 
   describe("upsertFinancialAccount(dto)", () => {
     describe("when an existing account is found", () => {
-      it("should update the account", () => {
-        // Arrange
-        const existingAccount = new model.FinancialAccount(
+      it("should update the account", async () => {
+        const existingAccount = new FinancialAccount(
           {
             name: "Checking",
             type: "Asset",
@@ -61,34 +63,22 @@ describe("FinancialAccountService", () => {
           type: "Liability",
         });
 
-        stubs.financialAccountDao.getById?.restore();
-        stubs.financialAccountDao.getById = stub(
-          FinancialAccountDao.prototype,
-          "getById",
-          (_id: string) => existingAccount,
+        getByIdAsyncSpy = spy(
+          (_id: string) => Promise.resolve(existingAccount),
         );
+        mockRepo.getByIdAsync = getByIdAsyncSpy;
 
-        stubs.financialAccountDao.save?.restore();
-        stubs.financialAccountDao.save = stub(
-          FinancialAccountDao.prototype,
-          "save",
-          (_entity: model.FinancialAccount) => 1,
-        );
+        await service.upsertFinancialAccount(updatedAccountData);
 
-        // Act
-        financialAccountService.upsertFinancialAccount(updatedAccountData);
-
-        // Assert
-        assertSpyCalls(stubs.financialAccountDao.getById, 1);
-        assertSpyCall(stubs.financialAccountDao.getById, 0, {
+        assertSpyCalls(getByIdAsyncSpy, 1);
+        assertSpyCall(getByIdAsyncSpy, 0, {
           args: [existingAccount.id],
-          returned: existingAccount,
         });
 
-        assertSpyCalls(stubs.financialAccountDao.save, 1);
-        assertSpyCall(stubs.financialAccountDao.save, 0, {
+        assertSpyCalls(saveAsyncSpy, 1);
+        assertSpyCall(saveAsyncSpy, 0, {
           args: [
-            new model.FinancialAccount(
+            new FinancialAccount(
               {
                 name: updatedAccountData.name,
                 type: "Liability",
@@ -96,48 +86,34 @@ describe("FinancialAccountService", () => {
               updatedAccountData.id!,
             ),
           ],
-          returned: 1,
         });
       });
     });
 
     describe("when no existing account exists", () => {
-      it("should create a new account", () => {
-        // Arrange
+      it("should create a new account", async () => {
         const accountData = schema.UpsertFinancialAccount.parse({
           id: crypto.randomUUID(),
           name: "Investment",
           type: "Liability",
         });
 
-        stubs.financialAccountDao.getById?.restore();
-        stubs.financialAccountDao.getById = stub(
-          FinancialAccountDao.prototype,
-          "getById",
-          (_id: string) => null,
+        getByIdAsyncSpy = spy(
+          (_id: string) => Promise.resolve(null),
         );
+        mockRepo.getByIdAsync = getByIdAsyncSpy;
 
-        stubs.financialAccountDao.save?.restore();
-        stubs.financialAccountDao.save = stub(
-          FinancialAccountDao.prototype,
-          "save",
-          (_entity: model.FinancialAccount) => 1,
-        );
+        await service.upsertFinancialAccount(accountData);
 
-        // Act
-        financialAccountService.upsertFinancialAccount(accountData);
-
-        // Assert
-        assertSpyCalls(stubs.financialAccountDao.getById, 1);
-        assertSpyCall(stubs.financialAccountDao.getById, 0, {
+        assertSpyCalls(getByIdAsyncSpy, 1);
+        assertSpyCall(getByIdAsyncSpy, 0, {
           args: [accountData.id],
-          returned: null,
         });
 
-        assertSpyCalls(stubs.financialAccountDao.save, 1);
-        assertSpyCall(stubs.financialAccountDao.save, 0, {
+        assertSpyCalls(saveAsyncSpy, 1);
+        assertSpyCall(saveAsyncSpy, 0, {
           args: [
-            new model.FinancialAccount(
+            new FinancialAccount(
               {
                 name: accountData.name,
                 type: "Liability",
@@ -145,42 +121,23 @@ describe("FinancialAccountService", () => {
               accountData.id,
             ),
           ],
-          returned: 1,
         });
       });
     });
 
     describe("when no id was provided", () => {
-      it("should create a new account", () => {
-        // Arrange
+      it("should create a new account", async () => {
         const accountData = schema.UpsertFinancialAccount.parse({
           id: null,
           name: "Investment",
           type: "Liability",
         });
 
-        stubs.financialAccountDao.getById?.restore();
-        stubs.financialAccountDao.getById = stub(
-          FinancialAccountDao.prototype,
-          "getById",
-          (_id: string) => null,
-        );
+        await service.upsertFinancialAccount(accountData);
 
-        stubs.financialAccountDao.save?.restore();
-        stubs.financialAccountDao.save = stub(
-          FinancialAccountDao.prototype,
-          "save",
-          (_entity: model.FinancialAccount) => 1,
-        );
-
-        // Act
-        financialAccountService.upsertFinancialAccount(accountData);
-
-        // Assert
-        assertSpyCalls(stubs.financialAccountDao.getById, 0);
-        assertSpyCalls(stubs.financialAccountDao.save, 1);
-        const actualSaveArg: model.FinancialAccount =
-          stubs.financialAccountDao.save.calls[0].args[0];
+        assertSpyCalls(getByIdAsyncSpy, 0);
+        assertSpyCalls(saveAsyncSpy, 1);
+        const actualSaveArg: FinancialAccount = saveAsyncSpy.calls[0].args[0];
         assertEquals(actualSaveArg.name, accountData.name);
         assertEquals(actualSaveArg.type, "Liability");
       });
@@ -188,45 +145,36 @@ describe("FinancialAccountService", () => {
   });
 
   describe("getAllFinancialAccounts()", () => {
-    it("should call FinancialAccountDao.getAll()", () => {
-      stubs.financialAccountDao.getAll?.restore();
-      stubs.financialAccountDao.getAll = stub(
-        FinancialAccountDao.prototype,
-        "getAll",
-        () => [],
+    it("should call getAllAsync()", async () => {
+      getAllAsyncSpy = spy(
+        () => Promise.resolve([]),
       );
+      mockRepo.getAllAsync = getAllAsyncSpy;
 
       const expected: schema.FinancialAccount[] = [];
-      const actual = financialAccountService.getAllFinancialAccounts();
+      const actual = await service.getAllFinancialAccounts();
 
-      assertExists(stubs.financialAccountDao.getAll);
-      assertSpyCalls(stubs.financialAccountDao.getAll, 1);
+      assertSpyCalls(getAllAsyncSpy, 1);
       assertArrayIncludes(actual, expected);
     });
 
-    it("should parse each returned record from DAO", () => {
-      // Arrange
+    it("should parse each returned record from repository", async () => {
       const records = [
-        new model.FinancialAccount({
+        new FinancialAccount({
           name: "Checking",
           type: "Asset",
         }, crypto.randomUUID()),
       ];
 
-      stubs.financialAccountDao.getAll?.restore();
-      stubs.financialAccountDao.getAll = stub(
-        FinancialAccountDao.prototype,
-        "getAll",
-        () => records,
+      getAllAsyncSpy = spy(
+        () => Promise.resolve(records),
       );
+      mockRepo.getAllAsync = getAllAsyncSpy;
       const schemaParseSpy = spy(schema.FinancialAccount, "parse");
 
-      // Act
-      const actual = financialAccountService.getAllFinancialAccounts();
+      const actual = await service.getAllFinancialAccounts();
 
-      // Assert
-      assertExists(stubs.financialAccountDao.getAll);
-      assertSpyCalls(stubs.financialAccountDao.getAll, 1);
+      assertSpyCalls(getAllAsyncSpy, 1);
       assertSpyCalls(schemaParseSpy, 1);
       assertSpyCall(schemaParseSpy, 0, { args: [records[0]] });
 
@@ -236,19 +184,16 @@ describe("FinancialAccountService", () => {
   });
 
   describe("deleteFinancialAccountsByIds(ids)", () => {
-    it("should invoke DAO", () => {
-      stubs.financialAccountDao.deleteByIds?.restore();
-      stubs.financialAccountDao.deleteByIds = stub(
-        FinancialAccountDao.prototype,
-        "deleteByIds",
-        (_ids) => 0,
+    it("should invoke repository", async () => {
+      deleteByIdsAsyncSpy = spy(
+        (_ids) => Promise.resolve(0),
       );
+      mockRepo.deleteByIdsAsync = deleteByIdsAsyncSpy;
 
-      financialAccountService.deleteFinancialAccountsByIds([]);
+      await service.deleteFinancialAccountsByIds([]);
 
-      assertExists(stubs.financialAccountDao.deleteByIds);
-      assertSpyCalls(stubs.financialAccountDao.deleteByIds, 1);
-      assertSpyCall(stubs.financialAccountDao.deleteByIds, 0, {
+      assertSpyCalls(deleteByIdsAsyncSpy, 1);
+      assertSpyCall(deleteByIdsAsyncSpy, 0, {
         args: [[]],
       });
     });

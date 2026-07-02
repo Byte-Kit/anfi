@@ -6,9 +6,9 @@ export const newAccountCommand = cli
   .name("new")
   .option("name")
   .option("type")
-  .action((exec) => {
+  .action(async (exec) => {
     const { args } = exec;
-    new FinancialAccountService().upsertFinancialAccount({
+    await new FinancialAccountService().upsertFinancialAccount({
       id: null,
       name: args.name,
       type: args.type,

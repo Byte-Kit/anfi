@@ -5,10 +5,10 @@ import { cli } from "@anfi/lib";
 export const removeAccountCommand = cli
   .builder()
   .name("rm")
-  .action(() => {
+  .action(async () => {
     const service = new FinancialAccountService();
 
-    const accounts = service.getAllFinancialAccounts();
+    const accounts = await service.getAllFinancialAccounts();
     if (accounts.length === 0) {
       console.warn("No existing account to edit");
       Deno.exit(1);
@@ -32,7 +32,7 @@ export const removeAccountCommand = cli
       Deno.exit(1);
     }
 
-    service.deleteFinancialAccountsByIds([accounts[index].id]);
+    await service.deleteFinancialAccountsByIds([accounts[index].id]);
     console.log("Ok");
   })
   .build();

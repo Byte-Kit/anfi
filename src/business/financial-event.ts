@@ -1,57 +1,78 @@
-import { FinancialAccountDao, FinancialEventDao } from "@anfi/dao";
-import { TransactionDao } from "@anfi/dao/transaction.ts";
-import * as db from "@anfi/db";
+import { DbContext } from "@anfi/db/context/index.ts";
+import { createSqliteDbContext } from "@anfi/db/context/index.ts";
 import { Chrono } from "@anfi/lib";
 import * as model from "@anfi/model";
+import {
+  createFinancialAccountRepository,
+  createFinancialEventRepository,
+  createTransactionRepository,
+  FinancialAccountRepository,
+  FinancialEventRepository,
+  FinancialTransactionRepository,
+} from "@anfi/model/repository";
 import * as schema from "./financial-event.schema.ts";
 
 export class FinancialEventService {
-  list(): schema.FinancialEventListItem[] {
-    const conn = new db.ConnectionBuilder().get();
-    const eventDao = new FinancialEventDao(conn);
-    const transactionDao = new TransactionDao(conn);
-    const accountDao = new FinancialAccountDao(conn);
+  #eventRepo: FinancialEventRepository;
+  #transactionRepo: FinancialTransactionRepository;
+  #accountRepo: FinancialAccountRepository;
+  #dbContext: DbContext;
 
-    const events = eventDao.getAll();
+  constructor(
+    eventRepo?: FinancialEventRepository,
+    transactionRepo?: FinancialTransactionRepository,
+    accountRepo?: FinancialAccountRepository,
+    dbContext?: DbContext,
+  ) {
+    const ctx = dbContext ?? createSqliteDbContext();
+    this.#dbContext = ctx;
+    this.#eventRepo = eventRepo ?? createFinancialEventRepository(ctx);
+    this.#transactionRepo = transactionRepo ?? createTransactionRepository(ctx);
+    this.#accountRepo = accountRepo ?? createFinancialAccountRepository(ctx);
+  }
+
+  async list(): Promise<schema.FinancialEventListItem[]> {
+    const events = await this.#eventRepo.getAllAsync();
     const eventIdToTransactions = Map.groupBy(
-      transactionDao.getByFinancialEventIds(events.map((e) => e.id)),
+      await this.#transactionRepo.getByFinancialEventIds(
+        events.map((e) => e.id),
+      ),
       (t) => t.financialEventId,
     );
 
-    return events.map((event) => {
+    const result: schema.FinancialEventListItem[] = [];
+    for (const event of events) {
       const transactions = eventIdToTransactions.get(event.id) ?? [];
-      if (!transactions) {
-        throw "Unexpected error";
-      }
 
       const creditTransaction = transactions.find((t) => t.type === "Credit")!;
       const debitTransaction = transactions.find((t) => t.type === "Debit")!;
 
-      const creditAccount = accountDao.getById(
+      const creditAccount = await this.#accountRepo.getByIdAsync(
         creditTransaction.financialAccountId,
       );
       if (!creditAccount) {
         throw "Unexpected error";
       }
 
-      const debitAccount = accountDao.getById(
+      const debitAccount = await this.#accountRepo.getByIdAsync(
         debitTransaction.financialAccountId,
       );
       if (!debitAccount) {
         throw "Unexpected error";
       }
 
-      return {
+      result.push({
         timestamp: Chrono.fromUnix(event.timestamp).toString(),
         sourceAccountName: creditAccount.name,
         targetAccountName: debitAccount.name,
         amount: creditTransaction.amount,
         description: event.description,
-      };
-    });
+      });
+    }
+    return result;
   }
 
-  create(input: schema.CreateFinancialEventInput) {
+  async create(input: schema.CreateFinancialEventInput) {
     const eventData = schema.CreateFinancialEvent.parse(input);
 
     const balance = eventData.transactions.reduce(
@@ -63,11 +84,7 @@ export class FinancialEventService {
       throw "Invalid financial event balance";
     }
 
-    const conn = new db.ConnectionBuilder().get();
-    const financialEventDao = new FinancialEventDao(conn);
-    const transactionDao = new TransactionDao(conn);
-
-    db.transact(() => {
+    await this.#dbContext.transactionAsync(async () => {
       const financialEvent = new model.FinancialEvent({
         description: eventData.description ?? "",
         timestamp: Chrono.from(eventData.timestamp).unix(),
@@ -81,8 +98,8 @@ export class FinancialEventService {
         });
       });
 
-      financialEventDao.save(financialEvent);
-      transactionDao.save(...transactions);
-    }, conn);
+      await this.#eventRepo.saveAsync(financialEvent);
+      await this.#transactionRepo.saveAsync(...transactions);
+    });
   }
 }

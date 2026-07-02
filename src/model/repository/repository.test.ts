@@ -1,5 +1,6 @@
-import { DbContext, DbRecord, DbValue } from "@anfi/db/context/index.ts";
-import { createRepository, Entity } from "@anfi/db/repository.ts";
+import { DbRecord, DbValue } from "@anfi/db/common.ts";
+import { DbContext } from "@anfi/db/context/index.ts";
+import { createRepository, Entity } from "./repository.ts";
 import { assert, assertEquals } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
 
@@ -19,6 +20,10 @@ function testEntityFromRecord(record: DbRecord): TestEntity {
 
 function testExtractColumns(entity: TestEntity): string[] {
   return Object.keys(entity);
+}
+
+function testExtractValues(entity: TestEntity): DbValue[] {
+  return [entity.id, entity.name, entity.age];
 }
 
 const testEntities: TestEntity[] = [
@@ -47,7 +52,13 @@ function createMockDbContext(): {
       queryAsyncCalls.push({ sql, args });
       return await Promise.resolve(queryAsyncResult);
     },
+    transactionAsync: async <T>(
+      action: (ctx: DbContext) => Promise<T>,
+    ): Promise<T> => {
+      return await action(context);
+    },
     closeAsync: async () => {},
+    cleanAsync: async () => {},
   };
 
   return {
@@ -82,6 +93,7 @@ describe("createRepository", () => {
         table: "items",
         entityFromRecord: testEntityFromRecord,
         extractColumns: testExtractColumns,
+        extractValues: testExtractValues,
       });
 
       const result = await repo.saveAsync();
@@ -97,6 +109,7 @@ describe("createRepository", () => {
         table: "items",
         entityFromRecord: testEntityFromRecord,
         extractColumns: testExtractColumns,
+        extractValues: testExtractValues,
       });
 
       await repo.saveAsync(testEntities[0]);
@@ -119,6 +132,7 @@ describe("createRepository", () => {
         table: "items",
         entityFromRecord: testEntityFromRecord,
         extractColumns: testExtractColumns,
+        extractValues: testExtractValues,
       });
 
       await repo.saveAsync(...testEntities);
@@ -137,6 +151,7 @@ describe("createRepository", () => {
         table: "items",
         entityFromRecord: testEntityFromRecord,
         extractColumns: testExtractColumns,
+        extractValues: testExtractValues,
       });
 
       const result = await repo.saveAsync(...testEntities);
@@ -153,6 +168,7 @@ describe("createRepository", () => {
         table: "items",
         entityFromRecord: testEntityFromRecord,
         extractColumns: testExtractColumns,
+        extractValues: testExtractValues,
       });
 
       await repo.getAllAsync();
@@ -174,6 +190,7 @@ describe("createRepository", () => {
         table: "items",
         entityFromRecord: testEntityFromRecord,
         extractColumns: testExtractColumns,
+        extractValues: testExtractValues,
       });
 
       const result = await repo.getAllAsync();
@@ -191,6 +208,7 @@ describe("createRepository", () => {
         table: "items",
         entityFromRecord: testEntityFromRecord,
         extractColumns: testExtractColumns,
+        extractValues: testExtractValues,
       });
 
       const result = await repo.getAllAsync();
@@ -207,6 +225,7 @@ describe("createRepository", () => {
         table: "items",
         entityFromRecord: testEntityFromRecord,
         extractColumns: testExtractColumns,
+        extractValues: testExtractValues,
       });
 
       const result = await repo.getByIdsAsync([]);
@@ -222,6 +241,7 @@ describe("createRepository", () => {
         table: "items",
         entityFromRecord: testEntityFromRecord,
         extractColumns: testExtractColumns,
+        extractValues: testExtractValues,
       });
 
       await repo.getByIdsAsync(["a1"]);
@@ -241,6 +261,7 @@ describe("createRepository", () => {
         table: "items",
         entityFromRecord: testEntityFromRecord,
         extractColumns: testExtractColumns,
+        extractValues: testExtractValues,
       });
 
       await repo.getByIdsAsync(["a1", "b2", "c3"]);
@@ -261,6 +282,7 @@ describe("createRepository", () => {
         table: "items",
         entityFromRecord: testEntityFromRecord,
         extractColumns: testExtractColumns,
+        extractValues: testExtractValues,
       });
 
       const result = await repo.getByIdsAsync(["a1"]);
@@ -278,6 +300,7 @@ describe("createRepository", () => {
         table: "items",
         entityFromRecord: testEntityFromRecord,
         extractColumns: testExtractColumns,
+        extractValues: testExtractValues,
       });
 
       const result = await repo.deleteByIdsAsync([]);
@@ -293,6 +316,7 @@ describe("createRepository", () => {
         table: "items",
         entityFromRecord: testEntityFromRecord,
         extractColumns: testExtractColumns,
+        extractValues: testExtractValues,
       });
 
       await repo.deleteByIdsAsync(["a1"]);
@@ -311,6 +335,7 @@ describe("createRepository", () => {
         table: "items",
         entityFromRecord: testEntityFromRecord,
         extractColumns: testExtractColumns,
+        extractValues: testExtractValues,
       });
 
       await repo.deleteByIdsAsync(["a1", "b2", "c3"]);
@@ -329,6 +354,7 @@ describe("createRepository", () => {
         table: "items",
         entityFromRecord: testEntityFromRecord,
         extractColumns: testExtractColumns,
+        extractValues: testExtractValues,
       });
 
       const result = await repo.deleteByIdsAsync(["a1", "b2"]);

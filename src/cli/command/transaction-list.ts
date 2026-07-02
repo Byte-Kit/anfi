@@ -5,8 +5,8 @@ import { cli } from "@anfi/lib";
 export const listFinancialEventCommand = cli
   .builder()
   .name("list")
-  .action((exec) => {
-    const items = new FinancialEventService().list();
+  .action(async (exec) => {
+    const items = await new FinancialEventService().list();
     console.log(
       new Table(
         ...items.map((

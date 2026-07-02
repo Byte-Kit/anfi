@@ -5,8 +5,9 @@ import { cli } from "@anfi/lib";
 export const listAccountCommand = cli
   .builder()
   .name("list")
-  .action((exec) => {
-    const accounts = new FinancialAccountService().getAllFinancialAccounts();
+  .action(async (exec) => {
+    const accounts = await new FinancialAccountService()
+      .getAllFinancialAccounts();
     console.log(
       new Table(
         ...accounts.map(({ id, type, name }, index) => [

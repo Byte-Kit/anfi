@@ -8,7 +8,7 @@ Deno 2.x project (no `node_modules`).
 
 - `src/cli/`: CLI implementation.
 - `src/business/`: Shared business logic.
-- `src/dao/`: Database access layer.
+- `src/model/repository/`: Data access via generic repository pattern.
 - `src/model/`: Business entities.
 - `src/db/`: Low-level database layer.
 - `src/lib/`: Shared utilities and libraries.

@@ -10,12 +10,13 @@ export const newFinancialEventCommand = cli
   .option("amount", "Transaction amount")
   .option("description", "Optional event description")
   .option("timestamp", "Optional ISO-8601 timestamp")
-  .action((exec) => {
+  .action(async (exec) => {
     const { args } = exec;
     const financialAccountService = new FinancialAccountService();
     const financialEventService = new FinancialEventService();
 
-    const existingAccounts = financialAccountService.getAllFinancialAccounts();
+    const existingAccounts = await financialAccountService
+      .getAllFinancialAccounts();
     if (existingAccounts.length < 2) {
       console.warn("Need at least 2 accounts to create a transaction");
       Deno.exit(1);
@@ -76,7 +77,7 @@ export const newFinancialEventCommand = cli
     if (args.timestamp) {
       input.timestamp = args.timestamp;
     }
-    financialEventService.create(input);
+    await financialEventService.create(input);
 
     console.log("Ok");
     exec.done();

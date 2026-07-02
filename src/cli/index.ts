@@ -3,7 +3,7 @@ import { ZodError } from "zod";
 import { anfi } from "./command/index.ts";
 
 try {
-  anfi.execute(Deno.args);
+  await anfi.execute(Deno.args);
 } catch (err) {
   if (err instanceof ZodError) {
     console.error(

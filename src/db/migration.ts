@@ -1,30 +1,60 @@
-import * as config from "@anfi/config.ts";
-import * as dbConnection from "./connection.ts";
+import { DbContext } from "@anfi/db/context/index.ts";
+import * as fs from "@anfi/lib/fs.ts";
+import * as path from "@anfi/lib/path.ts";
 
-/**
- * Execute SQL migration scripts from a directory,
- * configured using{@link config.Key.DbMigrationPath}
- *
- * Each migration entry are expected to be structured
- * as a directory with two files: up.sql and down.sql.
- *
- * Entries are sorted in alphabetical order.
- */
-export async function migrateAsync() {
-  const connection = new dbConnection.ConnectionBuilder().get();
-  const migrationsPath = config.get(config.Key.DbMigrationPath);
+export type MigrationOpts = {
+  pathToMigrations: string;
+  debug?: boolean;
+};
 
-  if (migrationsPath === null) {
-    return;
-  }
+export type MigrationRunner = {
+  migrateAsync: (opts: MigrationOpts) => Promise<void>;
+};
 
-  for await (const migration of Deno.readDir(migrationsPath)) {
-    if (!migration.isDirectory) {
-      continue;
-    }
+export function createMigrationRunner(context: DbContext): MigrationRunner {
+  return {
+    migrateAsync: async (opts: MigrationOpts) => {
+      const resolvedPath = path.resolvePath(opts.pathToMigrations);
+      const migrations: string[] = [];
 
-    const pathToMigration = `${migrationsPath}/${migration.name}/up.sql`;
-    const migrationScript = await Deno.readTextFile(pathToMigration);
-    connection.exec(migrationScript);
-  }
+      if (opts.debug) {
+        console.debug("[Migration] Starting migration from:", resolvedPath);
+      }
+
+      for await (const entry of Deno.readDir(resolvedPath)) {
+        if (
+          entry.isDirectory
+          && await fs.exists(path.join(resolvedPath, entry.name, "up.sql"))
+          && await fs.exists(path.join(resolvedPath, entry.name, "down.sql"))
+        ) {
+          migrations.push(entry.name);
+        }
+      }
+
+      migrations.sort((a, b) =>
+        a.localeCompare(b, undefined, { numeric: true })
+      );
+
+      for (const name of migrations) {
+        if (opts.debug) {
+          console.debug("[Migration] Running migration:", name);
+        }
+
+        const scriptPath = path.join(resolvedPath, name, "up.sql");
+        const scriptContent = await Deno.readTextFile(scriptPath);
+        for (
+          const statement of scriptContent
+            .split(";")
+            .map((s) => s.trim())
+            .filter((s) => s.length > 0)
+        ) {
+          await context.executeAsync(statement);
+        }
+
+        if (opts.debug) {
+          console.debug("[Migration] Finished migration:", name);
+        }
+      }
+    },
+  };
 }

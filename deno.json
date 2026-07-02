@@ -59,9 +59,9 @@
         "test"
       ]
     },
-    "db:clean": "deno run -P --env-file=.env src/db/scripts/clean.ts",
-    "db:migrate": "deno run -P --env-file=.env src/db/scripts/migrate.ts",
-    "db:reset": "deno run -P --env-file=.env src/db/scripts/reset.ts",
+    "db:clean": "deno run -P --env-file=.env src/scripts/db/clean.ts",
+    "db:migrate": "deno run -P --env-file=.env src/scripts/db/migrate.ts",
+    "db:reset": "deno run db:clean; deno run db:migrate",
     "coverage": "deno coverage --exclude=\"model\" --exclude=\"db\"",
     "dev:cli": "deno run -P --env-file=.env src/cli/index.ts",
     "dev:tui": "deno run -P --env-file=.env src/tui/index.tsx",
@@ -72,10 +72,10 @@
   "imports": {
     "@anfi/": "./src/",
     "@anfi/business": "./src/business/index.ts",
-    "@anfi/dao": "./src/dao/index.ts",
     "@anfi/db": "./src/db/index.ts",
     "@anfi/lib": "./src/lib/index.ts",
     "@anfi/model": "./src/model/index.ts",
+    "@anfi/model/repository": "./src/model/repository/index.ts",
     "@cliffy/table": "jsr:@cliffy/table@^1.0.0",
     "@std/assert": "jsr:@std/assert@1",
     "@std/cli": "jsr:@std/cli@1",

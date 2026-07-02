@@ -65,7 +65,7 @@ describe("cli", () => {
   });
 
   describe("CommandBuilder", () => {
-    it("build() should build a valid Command", () => {
+    it("build() should build a valid Command", async () => {
       let isChildren = false;
       let actualName = "";
 
@@ -82,7 +82,7 @@ describe("cli", () => {
         })
         .build();
 
-      command.execute(["--children", "--name", "Isaac"]);
+      await command.execute(["--children", "--name", "Isaac"]);
 
       assertEquals(command.descriptor.name, "anfi");
       assertEquals(command.descriptor.description, "Financial utilities.");
@@ -90,19 +90,19 @@ describe("cli", () => {
       assertEquals(actualName, "Isaac");
     });
 
-    it("should support sub-command", () => {
+    it("should support sub-command", async () => {
       const subCommand = cli
         .builder()
         .name("account")
         .action((exec) => exec.done())
         .build();
-      const subCommandExecStub = stub(subCommand, "execute", () => {});
+      const subCommandExecStub = stub(subCommand, "execute", async () => {});
       const command = cli.builder()
         .name("anfi")
         .subCommand(subCommand)
         .build();
 
-      command.execute(["account"]);
+      await command.execute(["account"]);
       assertSpyCalls(subCommandExecStub, 1);
     });
   });

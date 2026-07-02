@@ -1,76 +1,143 @@
 import * as schema from "@anfi/business/financial-event.schema.ts";
 import { FinancialEventService } from "@anfi/business/financial-event.ts";
-import {
-  FinancialAccountDao,
-  FinancialEventDao,
-  TransactionDao,
-} from "@anfi/dao";
-import * as db from "@anfi/db";
+import { DbContext } from "@anfi/db/context/index.ts";
 import { Chrono } from "@anfi/lib";
 import * as model from "@anfi/model";
-import { assertArrayIncludes, assertEquals, assertThrows } from "@std/assert";
+import {
+  FinancialAccountRepository,
+  FinancialEventRepository,
+  FinancialTransactionRepository,
+} from "@anfi/model/repository";
+import { assertArrayIncludes, assertEquals, assertRejects } from "@std/assert";
 import { assertExists } from "@std/assert/exists";
 import { assertObjectMatch } from "@std/assert/object-match";
-import { beforeAll, beforeEach, describe, it } from "@std/testing/bdd";
-import {
-  assertSpyCall,
-  assertSpyCalls,
-  SpyLike,
-  stub,
-} from "@std/testing/mock";
-
-type Stubs = {
-  connectionBuilder: {
-    get?: SpyLike;
-  };
-  financialEventDao: {
-    save?: SpyLike;
-    getAll?: SpyLike;
-  };
-  transactionDao: {
-    save?: SpyLike;
-    getByFinancialEventIds?: SpyLike;
-  };
-  financialAccountDao: {
-    getById?: SpyLike;
-  };
-};
+import { beforeEach, describe, it } from "@std/testing/bdd";
+import { assertSpyCall, assertSpyCalls, Spy, spy } from "@std/testing/mock";
 
 describe("FinancialEventService", () => {
+  let mockEventRepo: FinancialEventRepository;
+  let mockTxnRepo: FinancialTransactionRepository;
+  let mockAccountRepo: FinancialAccountRepository;
+  let eventSaveSpy: Spy;
+  let txnSaveSpy: Spy;
+  let eventGetAllSpy: Spy;
+  let txnGetByEventIdsSpy: Spy;
+  let accountGetByIdSpy: Spy;
   let service: FinancialEventService;
-  const stubs: Stubs = {
-    connectionBuilder: {},
-    financialEventDao: {},
-    transactionDao: {},
-    financialAccountDao: {},
-  };
 
-  beforeAll(() => {
-    db.stubDbConnection();
-  });
+  function createMockRepos() {
+    eventSaveSpy = spy(
+      (..._entities: model.FinancialEvent[]): Promise<number> =>
+        Promise.resolve(0),
+    );
+    eventGetAllSpy = spy(
+      (): Promise<model.FinancialEvent[]> => Promise.resolve([]),
+    );
+    const eventGetByIdSpy = spy(
+      (_id: string): Promise<model.FinancialEvent | null> =>
+        Promise.resolve(null),
+    );
+    const eventGetByIdsSpy = spy(
+      (): Promise<model.FinancialEvent[]> => Promise.resolve([]),
+    );
+    const eventDeleteSpy = spy(
+      (_ids: string[]): Promise<number> => Promise.resolve(0),
+    );
+
+    mockEventRepo = {
+      saveAsync: eventSaveSpy,
+      getAllAsync: eventGetAllSpy,
+      getByIdAsync: eventGetByIdSpy,
+      getByIdsAsync: eventGetByIdsSpy,
+      deleteByIdsAsync: eventDeleteSpy,
+    } as FinancialEventRepository;
+
+    txnSaveSpy = spy(
+      (..._entities: model.Transaction[]): Promise<number> =>
+        Promise.resolve(0),
+    );
+    const txnGetAllSpy = spy(
+      (): Promise<model.Transaction[]> => Promise.resolve([]),
+    );
+    const txnGetByIdSpy = spy(
+      (_id: string): Promise<model.Transaction | null> => Promise.resolve(null),
+    );
+    const txnGetByIdsSpy = spy(
+      (): Promise<model.Transaction[]> => Promise.resolve([]),
+    );
+    const txnDeleteSpy = spy(
+      (_ids: string[]): Promise<number> => Promise.resolve(0),
+    );
+    txnGetByEventIdsSpy = spy(
+      (_ids: string[]): Promise<model.Transaction[]> => Promise.resolve([]),
+    );
+
+    mockTxnRepo = {
+      saveAsync: txnSaveSpy,
+      getAllAsync: txnGetAllSpy,
+      getByIdAsync: txnGetByIdSpy,
+      getByIdsAsync: txnGetByIdsSpy,
+      deleteByIdsAsync: txnDeleteSpy,
+      getByFinancialEventIds: txnGetByEventIdsSpy,
+    } as FinancialTransactionRepository;
+
+    accountGetByIdSpy = spy(
+      (_id: string): Promise<model.FinancialAccount | null> =>
+        Promise.resolve(null),
+    );
+    const accountSaveSpy = spy(
+      (..._entities: model.FinancialAccount[]): Promise<number> =>
+        Promise.resolve(0),
+    );
+    const accountGetAllSpy = spy(
+      (): Promise<model.FinancialAccount[]> => Promise.resolve([]),
+    );
+    const accountGetByIdsSpy = spy(
+      (): Promise<model.FinancialAccount[]> => Promise.resolve([]),
+    );
+    const accountDeleteSpy = spy(
+      (_ids: string[]): Promise<number> => Promise.resolve(0),
+    );
+
+    mockAccountRepo = {
+      saveAsync: accountSaveSpy,
+      getAllAsync: accountGetAllSpy,
+      getByIdAsync: accountGetByIdSpy,
+      getByIdsAsync: accountGetByIdsSpy,
+      deleteByIdsAsync: accountDeleteSpy,
+    } as FinancialAccountRepository;
+  }
+
+  function createService() {
+    const mockDbContext = {
+      executeAsync: (): Promise<number> => Promise.resolve(0),
+      queryAsync: (): Promise<[]> => Promise.resolve([]),
+      transactionAsync: async <T>(
+        action: (ctx: DbContext) => Promise<T>,
+      ): Promise<T> => {
+        return await action(mockDbContext as unknown as DbContext);
+      },
+      closeAsync: async (): Promise<void> => {},
+      cleanAsync: async (): Promise<void> => {},
+    } as DbContext;
+
+    service = new FinancialEventService(
+      mockEventRepo,
+      mockTxnRepo,
+      mockAccountRepo,
+      mockDbContext,
+    );
+  }
 
   beforeEach(() => {
-    stubs.financialEventDao.save?.restore();
-    stubs.financialEventDao.save = stub(
-      FinancialEventDao.prototype,
-      "save",
-      (...entities) => entities.length,
-    );
-
-    stubs.transactionDao.save?.restore();
-    stubs.transactionDao.save = stub(
-      TransactionDao.prototype,
-      "save",
-      (...entities) => entities.length,
-    );
-
-    service = new FinancialEventService();
+    createMockRepos();
+    createService();
   });
 
   describe("create(input)", () => {
     describe("when total amount is not zero", () => {
-      it("should throw error", () => {
-        const error = assertThrows(() =>
+      it("should throw error", async () => {
+        await assertRejects(() =>
           service.create({
             transactions: [
               {
@@ -86,8 +153,6 @@ describe("FinancialEventService", () => {
             ],
           })
         );
-
-        assertExists(error);
       });
     });
 
@@ -109,29 +174,30 @@ describe("FinancialEventService", () => {
         ],
       };
 
-      beforeEach(() => {
-        stubs.financialEventDao.save?.restore();
-        stubs.financialEventDao.save = stub(
-          FinancialEventDao.prototype,
-          "save",
-          (...entities) => entities.length,
-        );
+      beforeEach(async () => {
+        createMockRepos();
 
-        stubs.transactionDao.save?.restore();
-        stubs.transactionDao.save = stub(
-          TransactionDao.prototype,
-          "save",
-          (...entities) => entities.length,
+        eventSaveSpy = spy(
+          (..._entities: model.FinancialEvent[]): Promise<number> =>
+            Promise.resolve(1),
         );
-        service.create(financialEvent);
+        mockEventRepo.saveAsync = eventSaveSpy;
+
+        txnSaveSpy = spy(
+          (..._entities: model.Transaction[]): Promise<number> =>
+            Promise.resolve(1),
+        );
+        mockTxnRepo.saveAsync = txnSaveSpy;
+
+        createService();
+        await service.create(financialEvent);
       });
 
-      it("should call FinancialEventDao.save", () => {
-        assertExists(stubs.financialEventDao.save);
-        assertSpyCalls(stubs.financialEventDao.save, 1);
+      it("should call FinancialEventRepository.saveAsync", () => {
+        assertSpyCalls(eventSaveSpy, 1);
 
         const actualFinancialEvent: model.FinancialEvent =
-          stubs.financialEventDao.save.calls[0].args[0];
+          eventSaveSpy.calls[0].args[0];
 
         assertObjectMatch(
           actualFinancialEvent,
@@ -142,11 +208,10 @@ describe("FinancialEventService", () => {
         );
       });
 
-      it("should call TransactionDao.save", () => {
-        assertExists(stubs.transactionDao.save);
-        assertSpyCalls(stubs.transactionDao.save, 1);
-        const actualTransactions: model.Transaction[] =
-          stubs.transactionDao.save.calls[0].args;
+      it("should call FinancialTransactionRepository.saveAsync", () => {
+        assertSpyCalls(txnSaveSpy, 1);
+        const actualTransactions: model.Transaction[] = txnSaveSpy.calls[0]
+          .args as unknown as model.Transaction[];
         assertArrayIncludes(
           actualTransactions.map(({ amount, type, financialAccountId }) => ({
             amount,
@@ -161,6 +226,27 @@ describe("FinancialEventService", () => {
             financialAccountId,
           })),
         );
+      });
+
+      describe("when saving the financial event fails", () => {
+        beforeEach(async () => {
+          createMockRepos();
+
+          eventSaveSpy = spy(
+            (..._entities: model.FinancialEvent[]): Promise<number> =>
+              Promise.reject("DB error"),
+          );
+          mockEventRepo.saveAsync = eventSaveSpy;
+
+          createService();
+          await assertRejects(
+            () => service.create(financialEvent),
+          );
+        });
+
+        it("should rethrow the error", () => {
+          assertSpyCalls(eventSaveSpy, 1);
+        });
       });
     });
   });
@@ -200,66 +286,67 @@ describe("FinancialEventService", () => {
     }, debitAccountIdentifier);
 
     beforeEach(() => {
-      stubs.financialEventDao.getAll?.restore();
-      stubs.financialEventDao.getAll = stub(
-        FinancialEventDao.prototype,
-        "getAll",
-        () => [financialEvent],
-      );
+      createMockRepos();
 
-      stubs.transactionDao.getByFinancialEventIds?.restore();
-      stubs.transactionDao.getByFinancialEventIds = stub(
-        TransactionDao.prototype,
-        "getByFinancialEventIds",
-        (_eventIds: string[]) => [creditTransaction, debitTransaction],
+      eventGetAllSpy = spy(
+        () => Promise.resolve([financialEvent]),
       );
+      mockEventRepo.getAllAsync = eventGetAllSpy;
 
-      stubs.financialAccountDao.getById?.restore();
-      stubs.financialAccountDao.getById = stub(
-        FinancialAccountDao.prototype,
-        "getById",
-        (identifier: string) => {
-          if (identifier === creditAccountIdentifier) return sourceAccount;
-          if (identifier === debitAccountIdentifier) return targetAccount;
-          return null;
+      txnGetByEventIdsSpy = spy(
+        (_eventIds: string[]) =>
+          Promise.resolve([creditTransaction, debitTransaction]),
+      );
+      mockTxnRepo.getByFinancialEventIds = txnGetByEventIdsSpy;
+
+      accountGetByIdSpy = spy(
+        (id: string) => {
+          if (id === creditAccountIdentifier) {
+            return Promise.resolve(sourceAccount);
+          }
+          if (id === debitAccountIdentifier) {
+            return Promise.resolve(targetAccount);
+          }
+          return Promise.resolve(null);
         },
+      );
+      mockAccountRepo.getByIdAsync = accountGetByIdSpy;
+
+      service = new FinancialEventService(
+        mockEventRepo,
+        mockTxnRepo,
+        mockAccountRepo,
       );
     });
 
-    it("should call FinancialEventDao.getAll", () => {
-      const actual = service.list();
+    it("should call FinancialEventRepository.getAllAsync", async () => {
+      const actual = await service.list();
 
-      assertExists(stubs.financialEventDao.getAll);
-      assertSpyCalls(stubs.financialEventDao.getAll, 1);
-
+      assertSpyCalls(eventGetAllSpy, 1);
       assertExists(actual);
     });
 
-    it("should call TransactionDao.getByFinancialEventIds with all event ids", () => {
-      service.list();
+    it("should call FinancialTransactionRepository.getByFinancialEventIds with all event ids", async () => {
+      await service.list();
 
-      assertExists(stubs.transactionDao.getByFinancialEventIds);
-      assertSpyCalls(stubs.transactionDao.getByFinancialEventIds, 1);
-      assertSpyCall(stubs.transactionDao.getByFinancialEventIds, 0, {
+      assertSpyCalls(txnGetByEventIdsSpy, 1);
+      assertSpyCall(txnGetByEventIdsSpy, 0, {
         args: [[eventIdentifier]],
       });
     });
 
-    it("should call FinancialAccountDao.getById for each transaction account", () => {
-      service.list();
+    it("should call FinancialAccountRepository.getByIdAsync for each transaction account", async () => {
+      await service.list();
 
-      assertExists(stubs.financialAccountDao.getById);
-      assertSpyCalls(stubs.financialAccountDao.getById, 2);
-      const firstCallIdentifier =
-        stubs.financialAccountDao.getById.calls[0].args[0];
-      const secondCallIdentifier =
-        stubs.financialAccountDao.getById.calls[1].args[0];
+      assertSpyCalls(accountGetByIdSpy, 2);
+      const firstCallIdentifier = accountGetByIdSpy.calls[0].args[0];
+      const secondCallIdentifier = accountGetByIdSpy.calls[1].args[0];
       assertEquals(firstCallIdentifier, creditAccountIdentifier);
       assertEquals(secondCallIdentifier, debitAccountIdentifier);
     });
 
-    it("should return the correct financial event list items", () => {
-      const actual = service.list();
+    it("should return the correct financial event list items", async () => {
+      const actual = await service.list();
 
       assertEquals(actual.length, 1);
       assertObjectMatch(
@@ -276,32 +363,67 @@ describe("FinancialEventService", () => {
 
     describe("when source account is missing", () => {
       beforeEach(() => {
-        stubs.financialAccountDao.getById?.restore();
-        stubs.financialAccountDao.getById = stub(
-          FinancialAccountDao.prototype,
-          "getById",
-          () => null,
+        createMockRepos();
+
+        eventGetAllSpy = spy(
+          () => Promise.resolve([financialEvent]),
+        );
+        mockEventRepo.getAllAsync = eventGetAllSpy;
+
+        txnGetByEventIdsSpy = spy(
+          () => Promise.resolve([creditTransaction, debitTransaction]),
+        );
+        mockTxnRepo.getByFinancialEventIds = txnGetByEventIdsSpy;
+
+        accountGetByIdSpy = spy(
+          () => Promise.resolve(null),
+        );
+        mockAccountRepo.getByIdAsync = accountGetByIdSpy;
+
+        service = new FinancialEventService(
+          mockEventRepo,
+          mockTxnRepo,
+          mockAccountRepo,
         );
       });
 
-      it("should throw an error", () => {
-        assertThrows(() => service.list());
+      it("should throw an error", async () => {
+        await assertRejects(() => service.list());
       });
     });
 
     describe("when target account is missing", () => {
       beforeEach(() => {
-        stubs.financialAccountDao.getById?.restore();
-        stubs.financialAccountDao.getById = stub(
-          FinancialAccountDao.prototype,
-          "getById",
-          (identifier: string) =>
-            identifier === creditAccountIdentifier ? sourceAccount : null,
+        createMockRepos();
+
+        eventGetAllSpy = spy(
+          () => Promise.resolve([financialEvent]),
+        );
+        mockEventRepo.getAllAsync = eventGetAllSpy;
+
+        txnGetByEventIdsSpy = spy(
+          () => Promise.resolve([creditTransaction, debitTransaction]),
+        );
+        mockTxnRepo.getByFinancialEventIds = txnGetByEventIdsSpy;
+
+        accountGetByIdSpy = spy(
+          (id: string) => {
+            return id === creditAccountIdentifier
+              ? Promise.resolve(sourceAccount)
+              : Promise.resolve(null);
+          },
+        );
+        mockAccountRepo.getByIdAsync = accountGetByIdSpy;
+
+        service = new FinancialEventService(
+          mockEventRepo,
+          mockTxnRepo,
+          mockAccountRepo,
         );
       });
 
-      it("should throw an error", () => {
-        assertThrows(() => service.list());
+      it("should throw an error", async () => {
+        await assertRejects(() => service.list());
       });
     });
   });

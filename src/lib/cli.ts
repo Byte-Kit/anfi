@@ -211,7 +211,9 @@ class CommandExecutionContext<T extends Args> {
   }
 }
 
-type CommandAction<T extends Args> = (_: CommandExecutionContext<T>) => void;
+type CommandAction<T extends Args> = (
+  _: CommandExecutionContext<T>,
+) => void | Promise<void>;
 
 class Command<T extends Args> {
   private _descriptor: CommandDescriptor;
@@ -243,17 +245,17 @@ class Command<T extends Args> {
     this._actions = actions;
   }
 
-  execute(input: string[]) {
+  async execute(input: string[]) {
     const args = this._parser.parse(input);
     const execution = new CommandExecutionContext<T>(
       input,
       args,
     );
-    this._preActions.concat(this._actions).forEach((action) => {
+    for (const action of this._preActions.concat(this._actions)) {
       if (!execution.isDone) {
-        action(execution);
+        await action(execution);
       }
-    });
+    }
   }
 }
 
@@ -302,11 +304,11 @@ export class CommandBuilder<T extends Args> {
     });
 
     this._preActions.push(
-      (ctx) => {
+      async (ctx) => {
         const { input, args } = ctx;
         const positionals = args._.join(" ");
         if (positionals.includes(subCommand.descriptor.name)) {
-          subCommand.execute(input);
+          await subCommand.execute(input);
           ctx.done();
         }
       },

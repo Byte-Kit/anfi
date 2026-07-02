@@ -1,24 +1,32 @@
-import { FinancialAccountDao } from "@anfi/dao";
+import { createSqliteDbContext } from "@anfi/db/context/index.ts";
 import * as model from "@anfi/model";
+import {
+  createFinancialAccountRepository,
+  FinancialAccountRepository,
+} from "@anfi/model/repository";
 import * as schema from "./financial-account.schema.ts";
-import * as db from "@anfi/db";
 
 export class FinancialAccountService {
-  upsertFinancialAccount(input: schema.UpsertFinancialAccountInput) {
-    const financialAccountDao = new FinancialAccountDao(
-      new db.ConnectionBuilder().get(),
-    );
+  #accountRepo: FinancialAccountRepository;
 
+  constructor(accountRepo?: FinancialAccountRepository) {
+    this.#accountRepo = accountRepo
+      ?? createFinancialAccountRepository(createSqliteDbContext());
+  }
+
+  async upsertFinancialAccount(input: schema.UpsertFinancialAccountInput) {
     const dto = schema.UpsertFinancialAccount.parse(input);
-    const existingAccount = dto.id ? financialAccountDao.getById(dto.id) : null;
+    const existingAccount = dto.id
+      ? await this.#accountRepo.getByIdAsync(dto.id)
+      : null;
 
     if (existingAccount) {
       existingAccount.name = dto.name;
       existingAccount.type = dto.type;
-      return financialAccountDao.save(existingAccount);
+      return await this.#accountRepo.saveAsync(existingAccount);
     }
 
-    return financialAccountDao.save(
+    return await this.#accountRepo.saveAsync(
       new model.FinancialAccount({
         type: dto.type,
         name: dto.name,
@@ -26,14 +34,12 @@ export class FinancialAccountService {
     );
   }
 
-  getAllFinancialAccounts(): schema.FinancialAccount[] {
-    return new FinancialAccountDao(new db.ConnectionBuilder().get())
-      .getAll()
-      .map((rec) => schema.FinancialAccount.parse(rec));
+  async getAllFinancialAccounts(): Promise<schema.FinancialAccount[]> {
+    const records = await this.#accountRepo.getAllAsync();
+    return records.map((rec) => schema.FinancialAccount.parse(rec));
   }
 
-  deleteFinancialAccountsByIds(ids: string[]) {
-    return new FinancialAccountDao(new db.ConnectionBuilder().get())
-      .deleteByIds(ids);
+  async deleteFinancialAccountsByIds(ids: string[]) {
+    return await this.#accountRepo.deleteByIdsAsync(ids);
   }
 }
