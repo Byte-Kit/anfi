@@ -18,12 +18,26 @@ Additionally, refer to `.gitignore` for the list of ignored files and directorie
 
 ## Scripts & Commands
 
-Deno development scripts:
+Deno development tasks:
 
 - `dev:cli`: Execute CLI.
-- `test`: Execute test and generate coverage report in `./coverage/`.
-- `test:watch`: Execute with hot-reloading support all tests that are modified.
-- `coverage`: Print coverate report to CLI.
+- `dev:tui`: Execute TUI (Terminal User Interface).
+- `test`: Execute tests with coverage.
+- `test:watch`: Run tests in watch mode with hot-reloading.
+- `coverage`: Print coverage report (excludes `model` and `db` paths).
+- `db:clean`: Clean the database.
+- `db:migrate`: Run database migrations.
+- `db:reset`: Clean and re-run all database migrations.
+- `build:cli`: Compile CLI to a standalone executable at `./build/anfi`.
+
+### Verification
+
+Always run the CI tasks to verify code quality and correctness after making any modifications:
+
+- `ci:lint`: Run Deno linter.
+- `ci:fmt`: Check code formatting under `src/`.
+- `ci:check`: Type-check the project.
+- `ci`: Run the full verification suite (runs `ci:fmt`, `ci:lint`, `ci:check`, `test`, and generates a coverage report).
 
 ## Programming Guidelines
 
