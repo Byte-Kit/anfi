@@ -1,19 +1,21 @@
 import { DbRecord, DbValue } from "@anfi/db/common.ts";
 import { DbContext } from "@anfi/db/context/index.ts";
 import { trim } from "@anfi/lib";
-import { Transaction } from "@anfi/model";
+import { FinancialTransaction } from "@anfi/model";
 import { createRepository, Repository } from "./repository.ts";
 
-export type FinancialTransactionRepository = Repository<Transaction> & {
-  getByFinancialEventIds(eventIds: string[]): Promise<Transaction[]>;
-};
+export type FinancialTransactionRepository =
+  & Repository<FinancialTransaction>
+  & {
+    getByFinancialEventIds(eventIds: string[]): Promise<FinancialTransaction[]>;
+  };
 
 export function createTransactionRepository(
   dbContext: DbContext,
   table: string = "financial_transaction",
 ): FinancialTransactionRepository {
-  const entityFromRecord = (record: DbRecord): Transaction => {
-    return new Transaction(
+  const entityFromRecord = (record: DbRecord): FinancialTransaction => {
+    return new FinancialTransaction(
       {
         amount: Number(record.amount),
         type: String(record.type) === "Credit" ? "Credit" : "Debit",
@@ -35,7 +37,7 @@ export function createTransactionRepository(
       "financial_account_id",
       "financial_event_id",
     ],
-    extractValues: (entity: Transaction): DbValue[] => [
+    extractValues: (entity: FinancialTransaction): DbValue[] => [
       entity.id,
       entity.amount,
       entity.type,

@@ -1,22 +1,24 @@
 import { BaseEntity } from "@anfi/model/common.ts";
 
-export interface TransactionData {
+export interface FinancialTransactionData {
   amount: number;
-  type: TransactionType;
+  type: FinancialTransactionType;
 
   financialAccountId: string;
   financialEventId: string;
 }
-export type TransactionType = "Credit" | "Debit";
+export type FinancialTransactionType = "Credit" | "Debit";
 
-export class Transaction extends BaseEntity implements TransactionData {
+export class FinancialTransaction extends BaseEntity
+  implements FinancialTransactionData {
   amount: number;
-  type: TransactionType;
+  type: FinancialTransactionType;
   financialAccountId: string;
   financialEventId: string;
 
   constructor(
-    { amount, type, financialAccountId, financialEventId }: TransactionData,
+    { amount, type, financialAccountId, financialEventId }:
+      FinancialTransactionData,
     id: string | null = null,
   ) {
     super(id);

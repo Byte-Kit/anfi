@@ -1,5 +1,9 @@
 import { createSqliteDbContext, DbContext } from "@anfi/db/context/index.ts";
-import { FinancialAccount, FinancialEvent, Transaction } from "@anfi/model";
+import {
+  FinancialAccount,
+  FinancialEvent,
+  FinancialTransaction,
+} from "@anfi/model";
 import { assertArrayIncludes, assertEquals, assertExists } from "@std/assert";
 import { beforeEach, describe, it } from "@std/testing/bdd";
 import {
@@ -39,8 +43,8 @@ describe("FinancialTransactionRepository", () => {
     accountId: string,
     eventId: string,
     overrides: Partial<{ amount: number; type: "Credit" | "Debit" }> = {},
-  ): Transaction {
-    return new Transaction({
+  ): FinancialTransaction {
+    return new FinancialTransaction({
       amount: overrides.amount ?? 100,
       type: overrides.type ?? "Credit",
       financialAccountId: accountId,
@@ -101,7 +105,7 @@ describe("FinancialTransactionRepository", () => {
         });
         await repo.saveAsync(original);
 
-        const updated = new Transaction({
+        const updated = new FinancialTransaction({
           amount: 150,
           type: "Credit",
           financialAccountId: accountId,

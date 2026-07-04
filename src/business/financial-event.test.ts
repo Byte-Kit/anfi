@@ -53,23 +53,25 @@ describe("FinancialEventService", () => {
     } as FinancialEventRepository;
 
     txnSaveSpy = spy(
-      (..._entities: model.Transaction[]): Promise<number> =>
+      (..._entities: model.FinancialTransaction[]): Promise<number> =>
         Promise.resolve(0),
     );
     const txnGetAllSpy = spy(
-      (): Promise<model.Transaction[]> => Promise.resolve([]),
+      (): Promise<model.FinancialTransaction[]> => Promise.resolve([]),
     );
     const txnGetByIdSpy = spy(
-      (_id: string): Promise<model.Transaction | null> => Promise.resolve(null),
+      (_id: string): Promise<model.FinancialTransaction | null> =>
+        Promise.resolve(null),
     );
     const txnGetByIdsSpy = spy(
-      (): Promise<model.Transaction[]> => Promise.resolve([]),
+      (): Promise<model.FinancialTransaction[]> => Promise.resolve([]),
     );
     const txnDeleteSpy = spy(
       (_ids: string[]): Promise<number> => Promise.resolve(0),
     );
     txnGetByEventIdsSpy = spy(
-      (_ids: string[]): Promise<model.Transaction[]> => Promise.resolve([]),
+      (_ids: string[]): Promise<model.FinancialTransaction[]> =>
+        Promise.resolve([]),
     );
 
     mockTxnRepo = {
@@ -184,7 +186,7 @@ describe("FinancialEventService", () => {
         mockEventRepo.saveAsync = eventSaveSpy;
 
         txnSaveSpy = spy(
-          (..._entities: model.Transaction[]): Promise<number> =>
+          (..._entities: model.FinancialTransaction[]): Promise<number> =>
             Promise.resolve(1),
         );
         mockTxnRepo.saveAsync = txnSaveSpy;
@@ -210,8 +212,9 @@ describe("FinancialEventService", () => {
 
       it("should call FinancialTransactionRepository.saveAsync", () => {
         assertSpyCalls(txnSaveSpy, 1);
-        const actualTransactions: model.Transaction[] = txnSaveSpy.calls[0]
-          .args as unknown as model.Transaction[];
+        const actualTransactions: model.FinancialTransaction[] = txnSaveSpy
+          .calls[0]
+          .args as unknown as model.FinancialTransaction[];
         assertArrayIncludes(
           actualTransactions.map(({ amount, type, financialAccountId }) => ({
             amount,
@@ -261,14 +264,14 @@ describe("FinancialEventService", () => {
       description: "Test transaction",
     }, eventIdentifier);
 
-    const creditTransaction = new model.Transaction({
+    const creditTransaction = new model.FinancialTransaction({
       amount: 500,
       type: "Credit",
       financialAccountId: creditAccountIdentifier,
       financialEventId: eventIdentifier,
     });
 
-    const debitTransaction = new model.Transaction({
+    const debitTransaction = new model.FinancialTransaction({
       amount: 500,
       type: "Debit",
       financialAccountId: debitAccountIdentifier,

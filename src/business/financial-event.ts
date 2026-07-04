@@ -90,7 +90,7 @@ export class FinancialEventService {
         timestamp: Chrono.from(eventData.timestamp).unix(),
       });
       const transactions = eventData.transactions.map((t) => {
-        return new model.Transaction({
+        return new model.FinancialTransaction({
           amount: t.amount,
           type: t.type,
           financialAccountId: t.financialAccountId,
