@@ -259,34 +259,39 @@ describe("FinancialEventService", () => {
     const creditAccountIdentifier = crypto.randomUUID();
     const debitAccountIdentifier = crypto.randomUUID();
 
-    const financialEvent = new model.FinancialEvent({
+    const financialEvent: model.FinancialEvent = {
+      id: eventIdentifier,
       timestamp: 1000000,
       description: "Test transaction",
-    }, eventIdentifier);
+    };
 
-    const creditTransaction = new model.FinancialTransaction({
+    const creditTransaction: model.FinancialTransaction = {
+      id: crypto.randomUUID(),
       amount: 500,
       type: "Credit",
       financialAccountId: creditAccountIdentifier,
       financialEventId: eventIdentifier,
-    });
+    };
 
-    const debitTransaction = new model.FinancialTransaction({
+    const debitTransaction: model.FinancialTransaction = {
+      id: crypto.randomUUID(),
       amount: 500,
       type: "Debit",
       financialAccountId: debitAccountIdentifier,
       financialEventId: eventIdentifier,
-    });
+    };
 
-    const sourceAccount = new model.FinancialAccount({
+    const sourceAccount: model.FinancialAccount = {
+      id: creditAccountIdentifier,
       name: "Checking",
       type: "Asset",
-    }, creditAccountIdentifier);
+    };
 
-    const targetAccount = new model.FinancialAccount({
+    const targetAccount: model.FinancialAccount = {
+      id: debitAccountIdentifier,
       name: "Savings",
       type: "Asset",
-    }, debitAccountIdentifier);
+    };
 
     beforeEach(() => {
       createMockRepos();

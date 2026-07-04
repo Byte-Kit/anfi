@@ -15,15 +15,13 @@ export function createTransactionRepository(
   table: string = "financial_transaction",
 ): FinancialTransactionRepository {
   const entityFromRecord = (record: DbRecord): FinancialTransaction => {
-    return new FinancialTransaction(
-      {
-        amount: Number(record.amount),
-        type: String(record.type) === "Credit" ? "Credit" : "Debit",
-        financialAccountId: String(record.financial_account_id),
-        financialEventId: String(record.financial_event_id),
-      },
-      String(record.id),
-    );
+    return {
+      id: String(record.id),
+      amount: Number(record.amount),
+      type: String(record.type) === "Credit" ? "Credit" : "Debit",
+      financialAccountId: String(record.financial_account_id),
+      financialEventId: String(record.financial_event_id),
+    };
   };
 
   const repo = createRepository({

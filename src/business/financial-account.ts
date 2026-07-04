@@ -1,5 +1,4 @@
 import { createSqliteDbContext } from "@anfi/db/context/index.ts";
-import * as model from "@anfi/model";
 import {
   createFinancialAccountRepository,
   FinancialAccountRepository,
@@ -26,12 +25,11 @@ export class FinancialAccountService {
       return await this.#accountRepo.saveAsync(existingAccount);
     }
 
-    return await this.#accountRepo.saveAsync(
-      new model.FinancialAccount({
-        type: dto.type,
-        name: dto.name,
-      }, dto.id),
-    );
+    return await this.#accountRepo.saveAsync({
+      id: dto.id ?? crypto.randomUUID(),
+      type: dto.type,
+      name: dto.name,
+    });
   }
 
   async getAllFinancialAccounts(): Promise<schema.FinancialAccount[]> {

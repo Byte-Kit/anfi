@@ -49,13 +49,11 @@ describe("FinancialAccountService", () => {
   describe("upsertFinancialAccount(dto)", () => {
     describe("when an existing account is found", () => {
       it("should update the account", async () => {
-        const existingAccount = new FinancialAccount(
-          {
-            name: "Checking",
-            type: "Asset",
-          },
-          crypto.randomUUID(),
-        );
+        const existingAccount: FinancialAccount = {
+          id: crypto.randomUUID(),
+          name: "Checking",
+          type: "Asset",
+        };
 
         const updatedAccountData = schema.UpsertFinancialAccount.parse({
           id: existingAccount.id,
@@ -77,15 +75,11 @@ describe("FinancialAccountService", () => {
 
         assertSpyCalls(saveAsyncSpy, 1);
         assertSpyCall(saveAsyncSpy, 0, {
-          args: [
-            new FinancialAccount(
-              {
-                name: updatedAccountData.name,
-                type: "Liability",
-              },
-              updatedAccountData.id!,
-            ),
-          ],
+          args: [{
+            id: updatedAccountData.id!,
+            name: updatedAccountData.name,
+            type: "Liability",
+          }],
         });
       });
     });
@@ -112,15 +106,11 @@ describe("FinancialAccountService", () => {
 
         assertSpyCalls(saveAsyncSpy, 1);
         assertSpyCall(saveAsyncSpy, 0, {
-          args: [
-            new FinancialAccount(
-              {
-                name: accountData.name,
-                type: "Liability",
-              },
-              accountData.id,
-            ),
-          ],
+          args: [{
+            id: accountData.id,
+            name: accountData.name,
+            type: "Liability",
+          }],
         });
       });
     });
@@ -159,12 +149,11 @@ describe("FinancialAccountService", () => {
     });
 
     it("should parse each returned record from repository", async () => {
-      const records = [
-        new FinancialAccount({
-          name: "Checking",
-          type: "Asset",
-        }, crypto.randomUUID()),
-      ];
+      const records: FinancialAccount[] = [{
+        id: crypto.randomUUID(),
+        name: "Checking",
+        type: "Asset",
+      }];
 
       getAllAsyncSpy = spy(
         () => Promise.resolve(records),

@@ -16,10 +16,11 @@ describe("FinancialTransactionRepository", () => {
   let repo!: FinancialTransactionRepository;
 
   async function createAccount(id: string): Promise<string> {
-    const account = new FinancialAccount(
-      { type: "Asset", name: "Account" },
+    const account: FinancialAccount = {
       id,
-    );
+      type: "Asset",
+      name: "Account",
+    };
     await dbContext.executeAsync(
       "INSERT INTO financial_account (id, type, name) VALUES (?, ?, ?)",
       [account.id, account.type, account.name],
@@ -28,10 +29,11 @@ describe("FinancialTransactionRepository", () => {
   }
 
   async function createEvent(id: string | null = null): Promise<string> {
-    const event = new FinancialEvent(
-      { timestamp: 1000000, description: "Event" },
-      id,
-    );
+    const event: FinancialEvent = {
+      id: id ?? crypto.randomUUID(),
+      timestamp: 1000000,
+      description: "Event",
+    };
     await dbContext.executeAsync(
       "INSERT INTO financial_event (id, timestamp, description) VALUES (?, ?, ?)",
       [event.id, event.timestamp, event.description],
@@ -44,12 +46,13 @@ describe("FinancialTransactionRepository", () => {
     eventId: string,
     overrides: Partial<{ amount: number; type: "Credit" | "Debit" }> = {},
   ): FinancialTransaction {
-    return new FinancialTransaction({
+    return {
+      id: crypto.randomUUID(),
       amount: overrides.amount ?? 100,
       type: overrides.type ?? "Credit",
       financialAccountId: accountId,
       financialEventId: eventId,
-    });
+    };
   }
 
   beforeEach(async () => {
@@ -105,12 +108,13 @@ describe("FinancialTransactionRepository", () => {
         });
         await repo.saveAsync(original);
 
-        const updated = new FinancialTransaction({
+        const updated: FinancialTransaction = {
+          id: original.id,
           amount: 150,
           type: "Credit",
           financialAccountId: accountId,
           financialEventId: eventId,
-        }, original.id);
+        };
         await repo.saveAsync(updated);
 
         const actual = await repo.getByIdAsync(original.id);

@@ -1,9 +1,3 @@
-import { BaseEntity } from "@anfi/model/common.ts";
-
-export interface FinancialAccountData {
-  type: FinancialAccountType;
-  name: string;
-}
 export type FinancialAccountType =
   | "Asset"
   | "Liability"
@@ -11,14 +5,8 @@ export type FinancialAccountType =
   | "Revenue"
   | "Expense";
 
-export class FinancialAccount extends BaseEntity
-  implements FinancialAccountData {
+export type FinancialAccount = {
+  id: string;
   type: FinancialAccountType;
   name: string;
-
-  constructor({ type, name }: FinancialAccountData, id: string | null = null) {
-    super(id);
-    this.type = type;
-    this.name = name;
-  }
-}
+};

@@ -13,13 +13,11 @@ export function createFinancialEventRepository(
     dbContext,
     table,
     entityFromRecord: (record: DbRecord): FinancialEvent => {
-      return new FinancialEvent(
-        {
-          timestamp: Number(record.timestamp),
-          description: String(record.description),
-        },
-        String(record.id),
-      );
+      return {
+        id: String(record.id),
+        timestamp: Number(record.timestamp),
+        description: String(record.description),
+      };
     },
     extractColumns: (): string[] => ["id", "timestamp", "description"],
     extractValues: (entity: FinancialEvent): DbValue[] => [

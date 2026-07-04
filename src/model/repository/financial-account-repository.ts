@@ -13,13 +13,11 @@ export function createFinancialAccountRepository(
     dbContext,
     table,
     entityFromRecord: (record: DbRecord): FinancialAccount => {
-      return new FinancialAccount(
-        {
-          type: String(record.type) as FinancialAccountType,
-          name: String(record.name),
-        },
-        String(record.id),
-      );
+      return {
+        id: String(record.id),
+        type: String(record.type) as FinancialAccountType,
+        name: String(record.name),
+      };
     },
     extractColumns: (): string[] => ["id", "type", "name"],
     extractValues: (entity: FinancialAccount): DbValue[] => [

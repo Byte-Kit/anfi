@@ -85,17 +85,19 @@ export class FinancialEventService {
     }
 
     await this.#dbContext.transactionAsync(async () => {
-      const financialEvent = new model.FinancialEvent({
+      const financialEvent: model.FinancialEvent = {
+        id: crypto.randomUUID(),
         description: eventData.description ?? "",
         timestamp: Chrono.from(eventData.timestamp).unix(),
-      });
+      };
       const transactions = eventData.transactions.map((t) => {
-        return new model.FinancialTransaction({
+        return {
+          id: crypto.randomUUID(),
           amount: t.amount,
           type: t.type,
           financialAccountId: t.financialAccountId,
           financialEventId: financialEvent.id,
-        });
+        } satisfies model.FinancialTransaction;
       });
 
       await this.#eventRepo.saveAsync(financialEvent);
