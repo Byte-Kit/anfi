@@ -1,4 +1,4 @@
-import { DbRecord, DbValue } from "@anfi/db/common.ts";
+import { DbRecord } from "@anfi/db/common.ts";
 import { DbContext } from "@anfi/db/context/index.ts";
 import { trim } from "@anfi/lib";
 import { FinancialTransaction } from "@anfi/model";
@@ -24,24 +24,16 @@ export function createTransactionRepository(
     };
   };
 
-  const repo = createRepository({
+  const repo = createRepository<FinancialTransaction>({
     dbContext,
     table,
-    entityFromRecord,
-    extractColumns: (): string[] => [
-      "id",
-      "amount",
-      "type",
-      "financial_account_id",
-      "financial_event_id",
-    ],
-    extractValues: (entity: FinancialTransaction): DbValue[] => [
-      entity.id,
-      entity.amount,
-      entity.type,
-      entity.financialAccountId,
-      entity.financialEventId,
-    ],
+    attributes: {
+      id: { column: "id" },
+      amount: { column: "amount" },
+      type: { column: "type" },
+      financialAccountId: { column: "financial_account_id" },
+      financialEventId: { column: "financial_event_id" },
+    },
   });
 
   return {

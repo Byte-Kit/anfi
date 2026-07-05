@@ -4,29 +4,7 @@ import { createRepository, Entity } from "./repository.ts";
 import { assert, assertEquals } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
 
-interface TestEntity extends Entity {
-  id: string;
-  name: string;
-  age: number;
-}
-
-function testEntityFromRecord(record: DbRecord): TestEntity {
-  return {
-    id: record.id as string,
-    name: record.name as string,
-    age: record.age as number,
-  };
-}
-
-function testExtractColumns(entity: TestEntity): string[] {
-  return Object.keys(entity);
-}
-
-function testExtractValues(entity: TestEntity): DbValue[] {
-  return [entity.id, entity.name, entity.age];
-}
-
-const testEntities: TestEntity[] = [
+const testEntities: Entity[] = [
   { id: "a1", name: "Alice", age: 30 },
   { id: "b2", name: "Bob", age: 25 },
 ];
@@ -84,6 +62,12 @@ function normalizeSql(sql: string): string {
   return sql.replace(/\s+/g, " ").trim();
 }
 
+const testAttributes = {
+  id: { column: "id" },
+  name: { column: "name" },
+  age: { column: "age" },
+};
+
 describe("createRepository", () => {
   describe("saveAsync", () => {
     it("should return 0 without calling dbContext when no entities are provided", async () => {
@@ -91,9 +75,7 @@ describe("createRepository", () => {
       const repo = createRepository({
         dbContext: mock.context,
         table: "items",
-        entityFromRecord: testEntityFromRecord,
-        extractColumns: testExtractColumns,
-        extractValues: testExtractValues,
+        attributes: testAttributes,
       });
 
       const result = await repo.saveAsync();
@@ -107,9 +89,7 @@ describe("createRepository", () => {
       const repo = createRepository({
         dbContext: mock.context,
         table: "items",
-        entityFromRecord: testEntityFromRecord,
-        extractColumns: testExtractColumns,
-        extractValues: testExtractValues,
+        attributes: testAttributes,
       });
 
       await repo.saveAsync(testEntities[0]);
@@ -130,9 +110,7 @@ describe("createRepository", () => {
       const repo = createRepository({
         dbContext: mock.context,
         table: "items",
-        entityFromRecord: testEntityFromRecord,
-        extractColumns: testExtractColumns,
-        extractValues: testExtractValues,
+        attributes: testAttributes,
       });
 
       await repo.saveAsync(...testEntities);
@@ -149,9 +127,7 @@ describe("createRepository", () => {
       const repo = createRepository({
         dbContext: mock.context,
         table: "items",
-        entityFromRecord: testEntityFromRecord,
-        extractColumns: testExtractColumns,
-        extractValues: testExtractValues,
+        attributes: testAttributes,
       });
 
       const result = await repo.saveAsync(...testEntities);
@@ -166,9 +142,7 @@ describe("createRepository", () => {
       const repo = createRepository({
         dbContext: mock.context,
         table: "items",
-        entityFromRecord: testEntityFromRecord,
-        extractColumns: testExtractColumns,
-        extractValues: testExtractValues,
+        attributes: testAttributes,
       });
 
       await repo.getAllAsync();
@@ -188,9 +162,7 @@ describe("createRepository", () => {
       const repo = createRepository({
         dbContext: mock.context,
         table: "items",
-        entityFromRecord: testEntityFromRecord,
-        extractColumns: testExtractColumns,
-        extractValues: testExtractValues,
+        attributes: testAttributes,
       });
 
       const result = await repo.getAllAsync();
@@ -206,9 +178,7 @@ describe("createRepository", () => {
       const repo = createRepository({
         dbContext: mock.context,
         table: "items",
-        entityFromRecord: testEntityFromRecord,
-        extractColumns: testExtractColumns,
-        extractValues: testExtractValues,
+        attributes: testAttributes,
       });
 
       const result = await repo.getAllAsync();
@@ -223,9 +193,7 @@ describe("createRepository", () => {
       const repo = createRepository({
         dbContext: mock.context,
         table: "items",
-        entityFromRecord: testEntityFromRecord,
-        extractColumns: testExtractColumns,
-        extractValues: testExtractValues,
+        attributes: testAttributes,
       });
 
       const result = await repo.getByIdsAsync([]);
@@ -239,9 +207,7 @@ describe("createRepository", () => {
       const repo = createRepository({
         dbContext: mock.context,
         table: "items",
-        entityFromRecord: testEntityFromRecord,
-        extractColumns: testExtractColumns,
-        extractValues: testExtractValues,
+        attributes: testAttributes,
       });
 
       await repo.getByIdsAsync(["a1"]);
@@ -259,9 +225,7 @@ describe("createRepository", () => {
       const repo = createRepository({
         dbContext: mock.context,
         table: "items",
-        entityFromRecord: testEntityFromRecord,
-        extractColumns: testExtractColumns,
-        extractValues: testExtractValues,
+        attributes: testAttributes,
       });
 
       await repo.getByIdsAsync(["a1", "b2", "c3"]);
@@ -280,9 +244,7 @@ describe("createRepository", () => {
       const repo = createRepository({
         dbContext: mock.context,
         table: "items",
-        entityFromRecord: testEntityFromRecord,
-        extractColumns: testExtractColumns,
-        extractValues: testExtractValues,
+        attributes: testAttributes,
       });
 
       const result = await repo.getByIdsAsync(["a1"]);
@@ -298,9 +260,7 @@ describe("createRepository", () => {
       const repo = createRepository({
         dbContext: mock.context,
         table: "items",
-        entityFromRecord: testEntityFromRecord,
-        extractColumns: testExtractColumns,
-        extractValues: testExtractValues,
+        attributes: testAttributes,
       });
 
       const result = await repo.deleteByIdsAsync([]);
@@ -314,9 +274,7 @@ describe("createRepository", () => {
       const repo = createRepository({
         dbContext: mock.context,
         table: "items",
-        entityFromRecord: testEntityFromRecord,
-        extractColumns: testExtractColumns,
-        extractValues: testExtractValues,
+        attributes: testAttributes,
       });
 
       await repo.deleteByIdsAsync(["a1"]);
@@ -333,9 +291,7 @@ describe("createRepository", () => {
       const repo = createRepository({
         dbContext: mock.context,
         table: "items",
-        entityFromRecord: testEntityFromRecord,
-        extractColumns: testExtractColumns,
-        extractValues: testExtractValues,
+        attributes: testAttributes,
       });
 
       await repo.deleteByIdsAsync(["a1", "b2", "c3"]);
@@ -352,9 +308,7 @@ describe("createRepository", () => {
       const repo = createRepository({
         dbContext: mock.context,
         table: "items",
-        entityFromRecord: testEntityFromRecord,
-        extractColumns: testExtractColumns,
-        extractValues: testExtractValues,
+        attributes: testAttributes,
       });
 
       const result = await repo.deleteByIdsAsync(["a1", "b2"]);
