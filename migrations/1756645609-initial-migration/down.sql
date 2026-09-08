@@ -1,6 +1,6 @@
 BEGIN TRANSACTION;
 DROP TABLE IF EXISTS "budget";
-DROP TABLE IF EXISTS "transaction";
+DROP TABLE IF EXISTS "financial_transaction";
 DROP TABLE IF EXISTS "financial_event";
 DROP TABLE IF EXISTS "financial_account";
 DROP TABLE IF EXISTS "_migration";
