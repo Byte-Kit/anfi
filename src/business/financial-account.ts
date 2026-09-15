@@ -1,16 +1,11 @@
-import { createSqliteDbContext } from "@anfi/db/context/index.ts";
-import {
-  createFinancialAccountRepository,
-  FinancialAccountRepository,
-} from "@anfi/model/repository";
+import { FinancialAccountRepository } from "@anfi/model/repository";
 import * as schema from "./financial-account.schema.ts";
 
 export class FinancialAccountService {
   #accountRepo: FinancialAccountRepository;
 
-  constructor(accountRepo?: FinancialAccountRepository) {
-    this.#accountRepo = accountRepo
-      ?? createFinancialAccountRepository(createSqliteDbContext());
+  constructor(accountRepo: FinancialAccountRepository) {
+    this.#accountRepo = accountRepo;
   }
 
   async upsertFinancialAccount(input: schema.UpsertFinancialAccountInput) {

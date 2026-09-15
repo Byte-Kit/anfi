@@ -2,7 +2,9 @@ import { FinancialAccountService } from "@anfi/business";
 import * as schema from "@anfi/business/financial-event.schema.ts";
 import { FinancialEventService } from "@anfi/business/financial-event.ts";
 import { cli } from "@anfi/lib";
+import { createFinancialAccountRepository } from "@anfi/model/repository";
 import { Table } from "@cliffy/table";
+import { createSqliteDbContextFromEnv } from "../services/db.ts";
 
 export const newFinancialEventCommand = cli
   .builder()
@@ -12,74 +14,85 @@ export const newFinancialEventCommand = cli
   .option("timestamp", "Optional ISO-8601 timestamp")
   .action(async (exec) => {
     const { args } = exec;
-    const financialAccountService = new FinancialAccountService();
-    const financialEventService = new FinancialEventService();
-
-    const existingAccounts = await financialAccountService
-      .getAllFinancialAccounts();
-    if (existingAccounts.length < 2) {
-      console.warn("Need at least 2 accounts to create a transaction");
-      Deno.exit(1);
-    }
-
-    console.log(
-      new Table(
-        ...existingAccounts.map((
-          { id, type, name },
-          i,
-        ) => [i + 1, id, type, name]),
-      ).header(["", "id", "type", "name"]).border().toString(),
+    const dbContext = createSqliteDbContextFromEnv();
+    const accountRepo = createFinancialAccountRepository(dbContext);
+    const financialAccountService = new FinancialAccountService(accountRepo);
+    const financialEventService = new FinancialEventService(
+      undefined,
+      undefined,
+      undefined,
+      dbContext,
     );
 
-    const sourceAccountIndex = Number(
-      prompt(`Select source account (1-${existingAccounts.length}):`),
-    ) - 1;
-    if (
-      sourceAccountIndex < 0 || sourceAccountIndex >= existingAccounts.length
-    ) {
-      console.warn("Invalid selection");
-      Deno.exit(1);
-    }
+    try {
+      const existingAccounts = await financialAccountService
+        .getAllFinancialAccounts();
+      if (existingAccounts.length < 2) {
+        console.warn("Need at least 2 accounts to create a transaction");
+        Deno.exit(1);
+      }
 
-    const targetAccountIndex = Number(
-      prompt(`Select target account (1-${existingAccounts.length}):`),
-    ) - 1;
-    if (
-      targetAccountIndex < 0 || targetAccountIndex >= existingAccounts.length
-    ) {
-      console.warn("Invalid selection");
-      Deno.exit(1);
-    }
+      console.log(
+        new Table(
+          ...existingAccounts.map((
+            { id, type, name },
+            i,
+          ) => [i + 1, id, type, name]),
+        ).header(["", "id", "type", "name"]).border().toString(),
+      );
 
-    if (sourceAccountIndex === targetAccountIndex) {
-      console.warn("Source and target account cannot be the same.");
-      Deno.exit(1);
-    }
+      const sourceAccountIndex = Number(
+        prompt(`Select source account (1-${existingAccounts.length}):`),
+      ) - 1;
+      if (
+        sourceAccountIndex < 0 || sourceAccountIndex >= existingAccounts.length
+      ) {
+        console.warn("Invalid selection");
+        Deno.exit(1);
+      }
 
-    const input: schema.CreateFinancialEventInput = {
-      transactions: [
-        {
-          type: "Credit",
-          amount: Number(args.amount),
-          financialAccountId: existingAccounts[sourceAccountIndex].id,
-        },
-        {
-          type: "Debit",
-          amount: Number(args.amount),
-          financialAccountId: existingAccounts[targetAccountIndex].id,
-        },
-      ],
-    };
+      const targetAccountIndex = Number(
+        prompt(`Select target account (1-${existingAccounts.length}):`),
+      ) - 1;
+      if (
+        targetAccountIndex < 0 || targetAccountIndex >= existingAccounts.length
+      ) {
+        console.warn("Invalid selection");
+        Deno.exit(1);
+      }
 
-    if (args.description) {
-      input.description = args.description;
-    }
-    if (args.timestamp) {
-      input.timestamp = args.timestamp;
-    }
-    await financialEventService.create(input);
+      if (sourceAccountIndex === targetAccountIndex) {
+        console.warn("Source and target account cannot be the same.");
+        Deno.exit(1);
+      }
 
-    console.log("Ok");
+      const input: schema.CreateFinancialEventInput = {
+        transactions: [
+          {
+            type: "Credit",
+            amount: Number(args.amount),
+            financialAccountId: existingAccounts[sourceAccountIndex].id,
+          },
+          {
+            type: "Debit",
+            amount: Number(args.amount),
+            financialAccountId: existingAccounts[targetAccountIndex].id,
+          },
+        ],
+      };
+
+      if (args.description) {
+        input.description = args.description;
+      }
+      if (args.timestamp) {
+        input.timestamp = args.timestamp;
+      }
+      await financialEventService.create(input);
+
+      console.log("Ok");
+    } finally {
+      await dbContext.closeAsync();
+    }
     exec.done();
   })
   .build();

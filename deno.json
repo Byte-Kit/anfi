@@ -8,6 +8,7 @@
         "CONTINUOUS_INTEGRATION",
         "DB_MIGRATION_PATH",
         "DB_PATH",
+        "DB_DEBUG",
         "DEV",
         "HOME",
         "INK_SCREEN_READER",
@@ -35,7 +36,8 @@
         "HOME",
         "PORT",
         "DB_PATH",
-        "DB_MIGRATION_PATH"
+        "DB_MIGRATION_PATH",
+        "DB_DEBUG"
       ],
       "read": [
         "./migrations/",
