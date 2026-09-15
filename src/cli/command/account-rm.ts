@@ -7,7 +7,7 @@ import { createSqliteDbContextFromEnv } from "../services/db.ts";
 export const removeAccountCommand = cli
   .builder()
   .name("rm")
-  .action(async () => {
+  .action(async (exec) => {
     const dbContext = createSqliteDbContextFromEnv();
     const accountRepo = createFinancialAccountRepository(dbContext);
     const service = new FinancialAccountService(accountRepo);
@@ -39,6 +39,7 @@ export const removeAccountCommand = cli
 
       await service.deleteFinancialAccountsByIds([accounts[index].id]);
       console.log("Ok");
+      exec.done();
     } finally {
       await dbContext.closeAsync();
     }
