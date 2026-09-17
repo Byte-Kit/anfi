@@ -16,7 +16,6 @@ export const newAccountCommand = cli
 
     try {
       await service.upsertFinancialAccount({
-        id: null,
         name: args.name,
         type: args.type,
       });

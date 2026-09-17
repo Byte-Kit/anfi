@@ -47,67 +47,22 @@ describe("FinancialAccountService", () => {
   });
 
   describe("upsertFinancialAccount(dto)", () => {
-    describe("when an existing account is found", () => {
-      it("should update the account", async () => {
-        const existingAccount: FinancialAccount = {
-          id: crypto.randomUUID(),
-          name: "Checking",
-          type: "Asset",
-        };
-
-        const updatedAccountData = schema.UpsertFinancialAccount.parse({
-          id: existingAccount.id,
-          name: "Investment",
-          type: "Liability",
-        });
-
-        getByIdAsyncSpy = spy(
-          (_id: string) => Promise.resolve(existingAccount),
-        );
-        mockRepo.getByIdAsync = getByIdAsyncSpy;
-
-        await service.upsertFinancialAccount(updatedAccountData);
-
-        assertSpyCalls(getByIdAsyncSpy, 1);
-        assertSpyCall(getByIdAsyncSpy, 0, {
-          args: [existingAccount.id],
-        });
-
-        assertSpyCalls(saveAsyncSpy, 1);
-        assertSpyCall(saveAsyncSpy, 0, {
-          args: [{
-            id: updatedAccountData.id!,
-            name: updatedAccountData.name,
-            type: "Liability",
-          }],
-        });
-      });
-    });
-
-    describe("when no existing account exists", () => {
-      it("should create a new account", async () => {
+    describe("when account data is provided with an ID", () => {
+      it("should upsert the account with the provided ID", async () => {
+        const accountId = crypto.randomUUID();
         const accountData = schema.UpsertFinancialAccount.parse({
-          id: crypto.randomUUID(),
+          id: accountId,
           name: "Investment",
           type: "Liability",
         });
-
-        getByIdAsyncSpy = spy(
-          (_id: string) => Promise.resolve(null),
-        );
-        mockRepo.getByIdAsync = getByIdAsyncSpy;
 
         await service.upsertFinancialAccount(accountData);
 
-        assertSpyCalls(getByIdAsyncSpy, 1);
-        assertSpyCall(getByIdAsyncSpy, 0, {
-          args: [accountData.id],
-        });
-
+        assertSpyCalls(getByIdAsyncSpy, 0);
         assertSpyCalls(saveAsyncSpy, 1);
         assertSpyCall(saveAsyncSpy, 0, {
           args: [{
-            id: accountData.id,
+            id: accountId,
             name: accountData.name,
             type: "Liability",
           }],
@@ -116,9 +71,8 @@ describe("FinancialAccountService", () => {
     });
 
     describe("when no id was provided", () => {
-      it("should create a new account", async () => {
+      it("should create a new account with a generated ID", async () => {
         const accountData = schema.UpsertFinancialAccount.parse({
-          id: null,
           name: "Investment",
           type: "Liability",
         });
@@ -130,6 +84,7 @@ describe("FinancialAccountService", () => {
         const actualSaveArg: FinancialAccount = saveAsyncSpy.calls[0].args[0];
         assertEquals(actualSaveArg.name, accountData.name);
         assertEquals(actualSaveArg.type, "Liability");
+        assertEquals(typeof actualSaveArg.id, "string");
       });
     });
   });

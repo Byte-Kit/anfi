@@ -10,16 +10,6 @@ export class FinancialAccountService {
 
   async upsertFinancialAccount(input: schema.UpsertFinancialAccountInput) {
     const dto = schema.UpsertFinancialAccount.parse(input);
-    const existingAccount = dto.id
-      ? await this.#accountRepo.getByIdAsync(dto.id)
-      : null;
-
-    if (existingAccount) {
-      existingAccount.name = dto.name;
-      existingAccount.type = dto.type;
-      return await this.#accountRepo.saveAsync(existingAccount);
-    }
-
     return await this.#accountRepo.saveAsync({
       id: dto.id ?? crypto.randomUUID(),
       type: dto.type,
