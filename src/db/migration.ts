@@ -8,12 +8,15 @@ export type MigrationOpts = {
 };
 
 export type MigrationRunner = {
-  migrateAsync: (opts: MigrationOpts) => Promise<void>;
+  migrateAsync: () => Promise<void>;
 };
 
-export function createMigrationRunner(context: DbContext): MigrationRunner {
+export function createMigrationRunner(
+  context: DbContext,
+  opts: MigrationOpts,
+): MigrationRunner {
   return {
-    migrateAsync: async (opts: MigrationOpts) => {
+    migrateAsync: async () => {
       const resolvedPath = path.resolvePath(opts.pathToMigrations);
       const migrations: string[] = [];
 

@@ -1,11 +1,7 @@
 import { DbContext } from "@anfi/db/context/index.ts";
 import { DbRecord, DbValue } from "@anfi/db/common.ts";
 import { SpyLike, stub } from "@std/testing/mock";
-import {
-  createMigrationRunner,
-  MigrationOpts,
-  MigrationRunner,
-} from "@anfi/db/migration.ts";
+import { createMigrationRunner, MigrationRunner } from "@anfi/db/migration.ts";
 import { assertEquals } from "@std/assert";
 import { afterEach, beforeEach, describe, it } from "@std/testing/bdd";
 
@@ -52,14 +48,16 @@ describe("createMigrationRunner", () => {
   beforeEach(async () => {
     await Deno.mkdir(TEST_DIR, { recursive: true });
     mock = createMockDbContext();
-    runner = createMigrationRunner(mock.context);
+    runner = createMigrationRunner(mock.context, {
+      pathToMigrations: TEST_DIR,
+    });
   });
 
   afterEach(async () => {
     await Deno.remove(TEST_DIR, { recursive: true });
   });
 
-  describe("migrateAsync(opts)", () => {
+  describe("migrateAsync()", () => {
     describe("when migration directories exist with valid scripts", () => {
       beforeEach(async () => {
         for (const name of MIGRATION_DIRS) {
@@ -68,11 +66,7 @@ describe("createMigrationRunner", () => {
       });
 
       it("should execute migrations in sorted order", async () => {
-        await runner.migrateAsync(
-          {
-            pathToMigrations: TEST_DIR,
-          } satisfies MigrationOpts,
-        );
+        await runner.migrateAsync();
 
         const executed = mock.executeAsyncCalls.map((c) => c.sql);
         assertEquals(executed.length, 3);
@@ -91,11 +85,7 @@ describe("createMigrationRunner", () => {
       });
 
       it("should skip the incomplete migration", async () => {
-        await runner.migrateAsync(
-          {
-            pathToMigrations: TEST_DIR,
-          } satisfies MigrationOpts,
-        );
+        await runner.migrateAsync();
 
         const executed = mock.executeAsyncCalls.map((c) => c.sql);
         assertEquals(executed, ["VALID"]);
@@ -111,11 +101,7 @@ describe("createMigrationRunner", () => {
       });
 
       it("should skip the incomplete migration", async () => {
-        await runner.migrateAsync(
-          {
-            pathToMigrations: TEST_DIR,
-          } satisfies MigrationOpts,
-        );
+        await runner.migrateAsync();
 
         const executed = mock.executeAsyncCalls.map((c) => c.sql);
         assertEquals(executed, ["VALID"]);
@@ -129,11 +115,7 @@ describe("createMigrationRunner", () => {
       });
 
       it("should ignore non-directory entries", async () => {
-        await runner.migrateAsync(
-          {
-            pathToMigrations: TEST_DIR,
-          } satisfies MigrationOpts,
-        );
+        await runner.migrateAsync();
 
         const executed = mock.executeAsyncCalls.map((c) => c.sql);
         assertEquals(executed, ["CREATE TABLE test (id)"]);
@@ -150,11 +132,7 @@ describe("createMigrationRunner", () => {
       });
 
       it("should execute each statement individually", async () => {
-        await runner.migrateAsync(
-          {
-            pathToMigrations: TEST_DIR,
-          } satisfies MigrationOpts,
-        );
+        await runner.migrateAsync();
 
         const executed = mock.executeAsyncCalls.map((c) => c.sql);
         assertEquals(executed, [
@@ -178,22 +156,20 @@ describe("createMigrationRunner", () => {
       });
 
       it("should log migration progress", async () => {
-        await runner.migrateAsync(
-          {
-            pathToMigrations: TEST_DIR,
-            debug: true,
-          } satisfies MigrationOpts,
-        );
+        runner = createMigrationRunner(mock.context, {
+          pathToMigrations: TEST_DIR,
+          debug: true,
+        });
+        await runner.migrateAsync();
 
         assertEquals(debugSpy.calls.length, 3);
       });
 
       it("should not log when debug is not set", async () => {
-        await runner.migrateAsync(
-          {
-            pathToMigrations: TEST_DIR,
-          } satisfies MigrationOpts,
-        );
+        runner = createMigrationRunner(mock.context, {
+          pathToMigrations: TEST_DIR,
+        });
+        await runner.migrateAsync();
 
         assertEquals(debugSpy.calls.length, 0);
       });
@@ -201,11 +177,7 @@ describe("createMigrationRunner", () => {
 
     describe("when no migration subdirectories exist", () => {
       it("should complete without executing any statements", async () => {
-        await runner.migrateAsync(
-          {
-            pathToMigrations: TEST_DIR,
-          } satisfies MigrationOpts,
-        );
+        await runner.migrateAsync();
 
         assertEquals(mock.executeAsyncCalls.length, 0);
       });
@@ -217,11 +189,7 @@ describe("createMigrationRunner", () => {
         await Deno.writeTextFile(`${TEST_DIR}/001-test/up.sql`, "SELECT 1;");
         await Deno.writeTextFile(`${TEST_DIR}/001-test/down.sql`, "SELECT 2;");
 
-        await runner.migrateAsync(
-          {
-            pathToMigrations: TEST_DIR,
-          } satisfies MigrationOpts,
-        );
+        await runner.migrateAsync();
 
         assertEquals(mock.executeAsyncCalls.length, 1);
         assertEquals(mock.executeAsyncCalls[0].sql, "SELECT 1");
@@ -252,11 +220,7 @@ describe("createMigrationRunner", () => {
       });
 
       it("should execute all statements across migrations in order", async () => {
-        await runner.migrateAsync(
-          {
-            pathToMigrations: TEST_DIR,
-          } satisfies MigrationOpts,
-        );
+        await runner.migrateAsync();
 
         const executed = mock.executeAsyncCalls.map((c) => c.sql);
         assertEquals(executed.length, 7);

@@ -7,7 +7,6 @@ import * as sqlite from "node:sqlite";
 export type SqliteDbConnection = sqlite.DatabaseSync;
 export type SqliteDbContextOptions = {
   path?: string;
-  pathToMigrations?: string;
   debug?: boolean;
 };
 

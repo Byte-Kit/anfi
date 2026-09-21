@@ -6,9 +6,11 @@ if (import.meta.main) {
   if (dbMigrationPath) {
     const dbPath = Deno.env.get("DB_PATH");
     const dbContext = createSqliteDbContext({ path: dbPath });
-    const runner = createMigrationRunner(dbContext);
+    const runner = createMigrationRunner(dbContext, {
+      pathToMigrations: dbMigrationPath,
+    });
 
-    await runner.migrateAsync({ pathToMigrations: dbMigrationPath });
+    await runner.migrateAsync();
     await dbContext.closeAsync();
   }
 }
