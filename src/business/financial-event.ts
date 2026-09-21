@@ -33,32 +33,53 @@ export class FinancialEventService {
 
   async list(): Promise<schema.FinancialEventListItem[]> {
     const events = await this.#eventRepo.getAllAsync();
+    if (events.length === 0) {
+      return [];
+    }
+
+    const allTransactions = await this.#transactionRepo.getByFinancialEventIds(
+      events.map((e) => e.id),
+    );
     const eventIdToTransactions = Map.groupBy(
-      await this.#transactionRepo.getByFinancialEventIds(
-        events.map((e) => e.id),
-      ),
+      allTransactions,
       (t) => t.financialEventId,
     );
+
+    const accountIds = Array.from(
+      new Set(allTransactions.map((t) => t.financialAccountId)),
+    );
+    const accounts = await this.#accountRepo.getByIdsAsync(accountIds);
+    const accountIdToAccount = new Map(accounts.map((a) => [a.id, a]));
 
     const result: schema.FinancialEventListItem[] = [];
     for (const event of events) {
       const transactions = eventIdToTransactions.get(event.id) ?? [];
 
-      const creditTransaction = transactions.find((t) => t.type === "Credit")!;
-      const debitTransaction = transactions.find((t) => t.type === "Debit")!;
+      const creditTransaction = transactions.find((t) => t.type === "Credit");
+      const debitTransaction = transactions.find((t) => t.type === "Debit");
 
-      const creditAccount = await this.#accountRepo.getByIdAsync(
+      if (!creditTransaction || !debitTransaction) {
+        throw new Error(
+          "Financial event must have at least one Credit and one Debit transaction",
+        );
+      }
+
+      const creditAccount = accountIdToAccount.get(
         creditTransaction.financialAccountId,
       );
       if (!creditAccount) {
-        throw "Unexpected error";
+        throw new Error(
+          `Credit account not found: ${creditTransaction.financialAccountId}`,
+        );
       }
 
-      const debitAccount = await this.#accountRepo.getByIdAsync(
+      const debitAccount = accountIdToAccount.get(
         debitTransaction.financialAccountId,
       );
       if (!debitAccount) {
-        throw "Unexpected error";
+        throw new Error(
+          `Debit account not found: ${debitTransaction.financialAccountId}`,
+        );
       }
 
       result.push({
@@ -81,7 +102,7 @@ export class FinancialEventService {
       0,
     );
     if (balance !== 0) {
-      throw "Invalid financial event balance";
+      throw new Error("Invalid financial event balance");
     }
 
     await this.#dbContext.transactionAsync(async () => {

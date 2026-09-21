@@ -22,7 +22,7 @@ describe("FinancialEventService", () => {
   let txnSaveSpy: Spy;
   let eventGetAllSpy: Spy;
   let txnGetByEventIdsSpy: Spy;
-  let accountGetByIdSpy: Spy;
+  let accountGetByIdsSpy: Spy;
   let service: FinancialEventService;
 
   function createMockRepos() {
@@ -83,10 +83,6 @@ describe("FinancialEventService", () => {
       getByFinancialEventIds: txnGetByEventIdsSpy,
     } as FinancialTransactionRepository;
 
-    accountGetByIdSpy = spy(
-      (_id: string): Promise<model.FinancialAccount | null> =>
-        Promise.resolve(null),
-    );
     const accountSaveSpy = spy(
       (..._entities: model.FinancialAccount[]): Promise<number> =>
         Promise.resolve(0),
@@ -94,8 +90,13 @@ describe("FinancialEventService", () => {
     const accountGetAllSpy = spy(
       (): Promise<model.FinancialAccount[]> => Promise.resolve([]),
     );
-    const accountGetByIdsSpy = spy(
-      (): Promise<model.FinancialAccount[]> => Promise.resolve([]),
+    const _accountGetByIdSpy = spy(
+      (_id: string): Promise<model.FinancialAccount | null> =>
+        Promise.resolve(null),
+    );
+    accountGetByIdsSpy = spy(
+      (_ids: string[]): Promise<model.FinancialAccount[]> =>
+        Promise.resolve([]),
     );
     const accountDeleteSpy = spy(
       (_ids: string[]): Promise<number> => Promise.resolve(0),
@@ -104,7 +105,7 @@ describe("FinancialEventService", () => {
     mockAccountRepo = {
       saveAsync: accountSaveSpy,
       getAllAsync: accountGetAllSpy,
-      getByIdAsync: accountGetByIdSpy,
+      getByIdAsync: _accountGetByIdSpy,
       getByIdsAsync: accountGetByIdsSpy,
       deleteByIdsAsync: accountDeleteSpy,
     } as FinancialAccountRepository;
@@ -307,18 +308,19 @@ describe("FinancialEventService", () => {
       );
       mockTxnRepo.getByFinancialEventIds = txnGetByEventIdsSpy;
 
-      accountGetByIdSpy = spy(
-        (id: string) => {
-          if (id === creditAccountIdentifier) {
-            return Promise.resolve(sourceAccount);
+      accountGetByIdsSpy = spy(
+        (ids: string[]) => {
+          const result: model.FinancialAccount[] = [];
+          if (ids.includes(creditAccountIdentifier)) {
+            result.push(sourceAccount);
           }
-          if (id === debitAccountIdentifier) {
-            return Promise.resolve(targetAccount);
+          if (ids.includes(debitAccountIdentifier)) {
+            result.push(targetAccount);
           }
-          return Promise.resolve(null);
+          return Promise.resolve(result);
         },
       );
-      mockAccountRepo.getByIdAsync = accountGetByIdSpy;
+      mockAccountRepo.getByIdsAsync = accountGetByIdsSpy;
 
       service = new FinancialEventService(
         mockEventRepo,
@@ -343,14 +345,15 @@ describe("FinancialEventService", () => {
       });
     });
 
-    it("should call FinancialAccountRepository.getByIdAsync for each transaction account", async () => {
+    it("should call FinancialAccountRepository.getByIdsAsync for transaction accounts", async () => {
       await service.list();
 
-      assertSpyCalls(accountGetByIdSpy, 2);
-      const firstCallIdentifier = accountGetByIdSpy.calls[0].args[0];
-      const secondCallIdentifier = accountGetByIdSpy.calls[1].args[0];
-      assertEquals(firstCallIdentifier, creditAccountIdentifier);
-      assertEquals(secondCallIdentifier, debitAccountIdentifier);
+      assertSpyCalls(accountGetByIdsSpy, 1);
+      const calledIds = accountGetByIdsSpy.calls[0].args[0];
+      assertArrayIncludes(calledIds, [
+        creditAccountIdentifier,
+        debitAccountIdentifier,
+      ]);
     });
 
     it("should return the correct financial event list items", async () => {
@@ -383,10 +386,10 @@ describe("FinancialEventService", () => {
         );
         mockTxnRepo.getByFinancialEventIds = txnGetByEventIdsSpy;
 
-        accountGetByIdSpy = spy(
-          () => Promise.resolve(null),
+        accountGetByIdsSpy = spy(
+          () => Promise.resolve([]),
         );
-        mockAccountRepo.getByIdAsync = accountGetByIdSpy;
+        mockAccountRepo.getByIdsAsync = accountGetByIdsSpy;
 
         service = new FinancialEventService(
           mockEventRepo,
@@ -414,14 +417,14 @@ describe("FinancialEventService", () => {
         );
         mockTxnRepo.getByFinancialEventIds = txnGetByEventIdsSpy;
 
-        accountGetByIdSpy = spy(
-          (id: string) => {
-            return id === creditAccountIdentifier
-              ? Promise.resolve(sourceAccount)
-              : Promise.resolve(null);
+        accountGetByIdsSpy = spy(
+          (ids: string[]) => {
+            return Promise.resolve(
+              ids.includes(creditAccountIdentifier) ? [sourceAccount] : [],
+            );
           },
         );
-        mockAccountRepo.getByIdAsync = accountGetByIdSpy;
+        mockAccountRepo.getByIdsAsync = accountGetByIdsSpy;
 
         service = new FinancialEventService(
           mockEventRepo,

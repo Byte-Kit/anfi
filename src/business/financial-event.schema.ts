@@ -10,7 +10,9 @@ export const CreateFinancialEvent = z.object({
    * For more information on ISO 8061, see {@link https://en.wikipedia.org/wiki/ISO_8601}.
    * @default Current unix timestamp.
    */
-  timestamp: z.iso.datetime({ offset: true }).default(Chrono.now().toString()),
+  timestamp: z.iso.datetime({ offset: true }).default(() =>
+    Chrono.now().toString()
+  ),
 
   /**
    * An optional description of the event.
@@ -22,12 +24,10 @@ export const CreateFinancialEvent = z.object({
    * The list of Transaction(s) associated with the Financial Event.
    */
   transactions: z.object({
-    amount: z.number().nonnegative(),
-    type: z.string().transform((value) =>
-      z.enum(["Credit", "Debit"]).parse(value)
-    ),
+    amount: z.number().positive(),
+    type: z.string().pipe(z.enum(["Credit", "Debit"])),
     financialAccountId: z.uuid(),
-  }).array(),
+  }).array().min(2, "Financial event must have at least two transactions"),
 });
 export type CreateFinancialEvent = z.infer<typeof CreateFinancialEvent>;
 export type CreateFinancialEventInput = z.input<typeof CreateFinancialEvent>;

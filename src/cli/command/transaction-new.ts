@@ -2,7 +2,11 @@ import { FinancialAccountService } from "@anfi/business";
 import * as schema from "@anfi/business/financial-event.schema.ts";
 import { FinancialEventService } from "@anfi/business/financial-event.ts";
 import { cli } from "@anfi/lib";
-import { createFinancialAccountRepository } from "@anfi/model/repository";
+import {
+  createFinancialAccountRepository,
+  createFinancialEventRepository,
+  createTransactionRepository,
+} from "@anfi/model/repository";
 import { Table } from "@cliffy/table";
 import { createSqliteDbContextFromEnv } from "../services/db.ts";
 
@@ -15,12 +19,14 @@ export const newFinancialEventCommand = cli
   .action(async (exec) => {
     const { args } = exec;
     const dbContext = createSqliteDbContextFromEnv();
+    const eventRepo = createFinancialEventRepository(dbContext);
+    const transactionRepo = createTransactionRepository(dbContext);
     const accountRepo = createFinancialAccountRepository(dbContext);
     const financialAccountService = new FinancialAccountService(accountRepo);
     const financialEventService = new FinancialEventService(
-      undefined,
-      undefined,
-      undefined,
+      eventRepo,
+      transactionRepo,
+      accountRepo,
       dbContext,
     );
 
