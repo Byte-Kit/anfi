@@ -1,19 +1,17 @@
-# ANFI
+# ANFI (Go Port)
 
-AnFi is a command line program for tracking and managing your spending.
+AnFi is a command line program and domain model backend for tracking and managing spending using double-entry bookkeeping.
 
-## Usage
+## Project Structure (Go)
 
-```
-anfi account new --type Asset 'Checking'
-anfi account new --type Asset 'Saving'
-anfi account new --type Revenue 'Salary'
-anfi account new --type Expense 'Rent'
-anfi account new --type Expense 'Grocery'
+- `internal/model/`: Domain entities (`FinancialAccount`, `FinancialEvent`, `FinancialTransaction`, `Budget`) with correct naming and types.
+- `internal/repository/`: Repository interfaces (`FinancialAccountRepository`, `FinancialEventRepository`, `FinancialTransactionRepository`) and their SQLite implementations using `database/sql` and `modernc.org/sqlite`.
+- `internal/db/`: Migration runner executing SQL migration files (`up.sql`) against the database.
+- `internal/service/`: Business services (`FinancialAccountService`, `FinancialEventService`) handling account upserts, listing, and double-entry balance validation ($\sum \text{Debits} - \sum \text{Credits} = 0$).
+- `migrations/`: Preserved SQL migration files.
 
-anfi transaction new --from 'Salary' --to 'Checking' --amount 100
-anfi transaction new --from 'Checking' --to 'Rent' --amount 20
-anfi transaction new --from 'Checking' --to 'Grocery' --amount 10
-anfi transaction new --from 'Checking' --to 'Recreation' --amount 50
-anfi transaction new --from 'Asset' --to 'Saving' --amount 20
+## Running Tests
+
+```sh
+go test -v ./...
 ```
