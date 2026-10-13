@@ -5,3 +5,8 @@
 coverage/
 output/
 build/
+
+
+# Added by cargo
+
+/target
